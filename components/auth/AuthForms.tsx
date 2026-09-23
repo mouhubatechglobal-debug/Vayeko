@@ -123,8 +123,9 @@ export function SignInForm() {
   );
 }
 
-/** Formulaire d'inscription. */
+/** Formulaire d'inscription avec choix Particulier / Professionnel. */
 export function SignUpForm() {
+  const [accountType, setAccountType] = useState<'user' | 'merchant'>('user');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -135,7 +136,7 @@ export function SignUpForm() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setFeedback(null);
-    const parsed = signUpSchema.safeParse({ fullName, email, password });
+    const parsed = signUpSchema.safeParse({ fullName, email, password, accountType });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) errs[issue.path.join('.') || '_'] = issue.message;
@@ -146,12 +147,16 @@ export function SignUpForm() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const redirectNext = accountType === 'user' ? '/profil' : '/dashboard/boutique';
       const { error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
         options: {
-          data: { full_name: parsed.data.fullName },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            full_name: parsed.data.fullName,
+            role: parsed.data.accountType,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${redirectNext}`,
         },
       });
       if (error) {
@@ -175,14 +180,51 @@ export function SignUpForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       <DemoNotice />
+
+      {/* Choix 2 boutons Particulier vs Commerçant */}
+      <div>
+        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-neutral-600">
+          Vous souhaitez créer un compte :
+        </label>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={() => setAccountType('user')}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 p-3 text-center transition ${
+              accountType === 'user'
+                ? 'border-vayeko-green bg-vayeko-green/5 text-vayeko-green font-bold shadow-sm'
+                : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            }`}
+          >
+            <span className="text-2xl">🛍️</span>
+            <span className="mt-1 text-sm font-bold">Particulier</span>
+            <span className="text-[11px] text-neutral-500 font-normal">Acheter & découvrir</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAccountType('merchant')}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 p-3 text-center transition ${
+              accountType === 'merchant'
+                ? 'border-vayeko-green bg-vayeko-green/5 text-vayeko-green font-bold shadow-sm'
+                : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            }`}
+          >
+            <span className="text-2xl">🏪</span>
+            <span className="mt-1 text-sm font-bold">Commerçant</span>
+            <span className="text-[11px] text-neutral-500 font-normal">Vendre & publier</span>
+          </button>
+        </div>
+      </div>
+
       <Input
-        label="Nom complet"
+        label={accountType === 'merchant' ? 'Nom du gérant ou nom commercial' : 'Nom complet'}
         type="text"
         autoComplete="name"
         required
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
         error={errors.fullName}
+        placeholder={accountType === 'merchant' ? 'Ex: Jean Koffi' : 'Ex: Abla Mensah'}
       />
       <Input
         label="Adresse e-mail"
@@ -203,14 +245,22 @@ export function SignUpForm() {
         error={errors.password}
         hint="8 caractères minimum, avec une lettre et un chiffre."
       />
+
       {feedback && (
-        <p role="alert" className={`rounded-lg px-3 py-2 text-sm font-medium ${feedback.kind === 'err' ? 'bg-red-50 text-vayeko-red' : 'bg-emerald-50 text-emerald-700'}`}>
+        <p
+          role="alert"
+          className={`rounded-lg px-3 py-2 text-sm font-medium ${
+            feedback.kind === 'err' ? 'bg-red-50 text-vayeko-red' : 'bg-emerald-50 text-emerald-700'
+          }`}
+        >
           {feedback.text}
         </p>
       )}
+
       <Button type="submit" loading={loading} className="w-full" size="lg">
-        Créer mon compte
+        {accountType === 'merchant' ? 'Créer mon compte Commerçant' : 'Créer mon compte'}
       </Button>
+
       <p className="text-center text-xs text-neutral-500">
         En créant un compte, vous acceptez nos{' '}
         <Link href="/conditions" className="font-semibold text-vayeko-green hover:underline">
@@ -225,6 +275,7 @@ export function SignUpForm() {
     </form>
   );
 }
+
 
 /** Formulaire de réinitialisation du mot de passe. */
 export function ResetPasswordForm() {

@@ -1,3 +1,4 @@
+import { UpgradeToMerchantButton } from '@/components/profil/UpgradeToMerchantButton';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getServerSupabase } from '@/lib/database';
@@ -53,6 +54,8 @@ export default async function ProfilPage() {
           </div>
         </div>
       </div>
+
+      <UpgradeToMerchantButton currentRole={profile.role} />
 
       <section aria-labelledby="mes-favoris" className="mt-8">
         <h2 id="mes-favoris" className="text-xl font-extrabold text-vayeko-green">

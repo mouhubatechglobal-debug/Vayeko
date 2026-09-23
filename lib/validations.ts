@@ -34,6 +34,7 @@ export const signUpSchema = z.object({
     .max(72, 'Mot de passe trop long.')
     .regex(/[A-Za-z]/, 'Ajoutez au moins une lettre.')
     .regex(/\d/, 'Ajoutez au moins un chiffre.'),
+  accountType: z.enum(['user', 'merchant', 'provider']).default('user'),
 });
 
 export const signInSchema = z.object({
