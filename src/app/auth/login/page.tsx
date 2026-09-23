@@ -19,20 +19,19 @@ export default function LoginPage() {
     setError("")
     const user = mockUsers.find(u => u.email === email && u.password === password)
     if (!user) {
-      setError("Email ou mot de passe incorrect. Essayez les comptes démo ci-dessous.")
+      setError("Email ou mot de passe incorrect. Essayez les comptes démo ci-dessous. Note: un USER peut acheter sans être SELLER.")
       return
     }
-    storeUser({ id: user.id, email: user.email, name: user.name, roles: user.roles, city: user.city, avatar: user.avatar })
+    storeUser({ id: user.id, email: user.email, name: user.name, roles: user.roles, city: user.city, avatar: user.avatar, professions: user.professions })
     window.dispatchEvent(new Event('vayeko-auth-change'))
     router.push('/')
   }
 
-  const fillDemo = (type: 'client' | 'vendeur' | 'pro' | 'admin') => {
+  const fillDemo = (type: 'vendeur' | 'pro' | 'admin') => {
     const map = {
-      client: { email: 'client@vayeko.tg', password: 'client123' },
-      vendeur: { email: 'vendeur@vayeko.tg', password: 'vendeur123' },
-      pro: { email: 'pro@vayeko.tg', password: 'pro123' },
-      admin: { email: 'admin@vayeko.tg', password: 'admin123' },
+      vendeur: { email: 'vendeur@vayeko.tg', password: process.env.NEXT_PUBLIC_DEMO_SELLER_PASSWORD || 'vendeur123' },
+      pro: { email: 'pro@vayeko.tg', password: process.env.NEXT_PUBLIC_DEMO_PRO_PASSWORD || 'pro123' },
+      admin: { email: 'admin@vayeko.tg', password: process.env.NEXT_PUBLIC_DEMO_ADMIN_PASSWORD || 'admin123' },
     }
     setEmail(map[type].email)
     setPassword(map[type].password)
@@ -48,6 +47,7 @@ export default function LoginPage() {
           </Link>
           <h1 className="mt-6 text-[26px] font-bold tracking-tight">Connexion</h1>
           <p className="text-sm text-[#6B7B6B] mt-1">Accédez à votre espace Vayeko</p>
+          <p className="text-[11px] text-[#9CA99C] mt-1">Un USER peut acheter sans devenir SELLER/PRO — rôles cumulables</p>
         </div>
 
         <Card className="p-6 sm:p-8">
@@ -65,23 +65,21 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6">
-            <div className="text-xs font-medium text-[#6B7B6B] mb-2">Comptes démo (cliquez pour remplir) :</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => fillDemo('client')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Client</div><div className="text-[#6B7B6B]">client@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('vendeur')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Vendeur</div><div className="text-[#6B7B6B]">vendeur@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('pro')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Professionnel</div><div className="text-[#6B7B6B]">pro@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('admin')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Admin</div><div className="text-[#6B7B6B]">admin@vayeko.tg</div></button>
+            <div className="text-xs font-medium text-[#6B7B6B] mb-2">Comptes démo DEV uniquement (3) :</div>
+            <div className="grid grid-cols-1 gap-2">
+              <button onClick={() => fillDemo('vendeur')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Vendeur — USER + SELLER</div><div className="text-[#6B7B6B]">vendeur@vayeko.tg • Boutique, produits, commandes</div></div><span className="text-[#0E9F6E]">→</span></button>
+              <button onClick={() => fillDemo('pro')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Professionnel — USER + PROFESSIONAL</div><div className="text-[#6B7B6B]">pro@vayeko.tg • Services, réservations</div></div><span className="text-[#0E9F6E]">→</span></button>
+              <button onClick={() => fillDemo('admin')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Admin — USER + ADMIN</div><div className="text-[#6B7B6B]">admin@vayeko.tg • Modération, audit</div></div><span className="text-[#0E9F6E]">→</span></button>
             </div>
+            <div className="mt-3 text-[11px] text-[#9CA99C] bg-[#FFFBEB] p-2.5 rounded-[10px]">💡 Un compte USER simple peut acheter sans rôle SELLER. Il pourra plus tard créer boutique (SELLER) ou service (PROFESSIONAL) et cumuler USER+SELLER+PROFESSIONAL. Pas de compte démo Client — comportement d'achat lié au compte, activité pro gérée séparément.</div>
           </div>
 
           <div className="mt-6 text-center text-xs">
             <Link href="/auth/register" className="text-[#0E9F6E] font-medium hover:underline">Pas encore de compte ? S&apos;inscrire</Link>
             <span className="mx-2 text-[#E8E0D0]">•</span>
-            <Link href="#" className="text-[#6B7B6B] hover:underline">Mot de passe oublié ?</Link>
+            <Link href="/mot-de-passe-oublie" className="text-[#6B7B6B] hover:underline">Mot de passe oublié ?</Link>
           </div>
         </Card>
-
-        <div className="mt-4 text-center text-[11px] text-[#9CA99C]">En vous connectant, vous acceptez les conditions d&apos;utilisation et la politique de confidentialité de Vayeko.</div>
       </div>
     </div>
   )

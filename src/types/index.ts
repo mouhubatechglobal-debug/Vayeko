@@ -1,5 +1,8 @@
 // Vayeko - Types centralisés
 // Tous les types de l'application
+// IMPORTANT: Profession ≠ Rôle
+// Rôle = ce qu'elle PEUT faire sur Vayeko (USER, SELLER, PROFESSIONAL...)
+// Profession = ce qu'elle FAIT (mécanicien, coiffeur, architecte...)
 
 export type TogoCity = 'Lomé' | 'Sokodé' | 'Kara' | 'Atakpamé' | 'Kpalimé' | 'Dapaong' | 'Tsévié' | 'Aného'
 
@@ -49,6 +52,51 @@ export enum PropertyStatus {
   LOUE = 'LOUE'
 }
 
+export enum VerificationStatus {
+  NON_VERIFIE = 'NON_VERIFIE',
+  EN_VERIFICATION = 'EN_VERIFICATION',
+  VERIFIE = 'VERIFIE',
+  REJETE = 'REJETE'
+}
+
+export interface ProfessionCategory {
+  id: string
+  name: string
+  slug: string
+  description: string
+  icon: string
+  color: string
+}
+
+export interface Profession {
+  id: string
+  name: string
+  slug: string
+  categoryId: string
+  description: string
+  icon: string
+  requiresVerification: boolean
+  isActive: boolean
+}
+
+export interface ProfessionalProfile {
+  id: string
+  userId: string
+  professionId?: string
+  customProfession?: string
+  profession?: Profession
+  businessId?: string
+  business?: Shop
+  description?: string
+  experience?: string
+  verificationStatus: VerificationStatus
+  verificationNotes?: string
+  verifiedAt?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export interface UserProfile {
   id: string
   email: string
@@ -57,9 +105,12 @@ export interface UserProfile {
   avatar?: string
   city: TogoCity
   quartier?: string
-  roles: Role[]
+  roles: Role[] // Ce qu'elle PEUT faire sur Vayeko
+  professions?: ProfessionalProfile[] // Ce qu'elle FAIT dans la vie
   isVerified?: boolean
   createdAt?: string
+  // Un USER peut acheter sans devenir SELLER/PROFESSIONAL
+  // Ex: USER achète téléphone, reste USER, plus tard crée boutique => SELLER, cumule USER+SELLER
 }
 
 export interface Shop {
@@ -128,6 +179,8 @@ export interface Professional {
   rating: number
   reviewCount: number
   userId: string
+  profession?: Profession
+  verificationStatus?: VerificationStatus
 }
 
 export interface Service {
@@ -154,6 +207,8 @@ export interface Service {
     whatsapp: string
     isOpen: boolean
     horaires: string
+    profession?: Profession
+    verificationStatus?: VerificationStatus
   }
   city: TogoCity
 }

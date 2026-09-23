@@ -35,9 +35,8 @@ function ConnexionContent() {
     router.push(redirect)
   }
 
-  const fillDemo = (type: 'client' | 'vendeur' | 'pro' | 'admin') => {
+  const fillDemo = (type: 'vendeur' | 'pro' | 'admin') => {
     const map = {
-      client: { email: 'client@vayeko.tg', password: 'client123' },
       vendeur: { email: 'vendeur@vayeko.tg', password: 'vendeur123' },
       pro: { email: 'pro@vayeko.tg', password: 'pro123' },
       admin: { email: 'admin@vayeko.tg', password: 'admin123' },
@@ -56,6 +55,7 @@ function ConnexionContent() {
           </Link>
           <h1 className="mt-6 text-[26px] font-bold tracking-tight">Connexion</h1>
           <p className="text-sm text-[#6B7B6B] mt-1">Accédez à votre espace Vayeko • Sécurisé par Supabase Auth</p>
+          <p className="text-[11px] text-[#9CA99C] mt-1">USER peut acheter sans SELLER — rôles cumulables USER+SELLER+PROFESSIONAL</p>
         </div>
 
         <Card className="p-6 sm:p-8">
@@ -73,19 +73,21 @@ function ConnexionContent() {
           </form>
 
           <div className="mt-6">
-            <div className="text-xs font-medium text-[#6B7B6B] mb-2">Comptes démo (cliquez pour remplir) :</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => fillDemo('client')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Client</div><div className="text-[#6B7B6B]">client@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('vendeur')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Vendeur</div><div className="text-[#6B7B6B]">vendeur@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('pro')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Professionnel</div><div className="text-[#6B7B6B]">pro@vayeko.tg</div></button>
-              <button onClick={() => fillDemo('admin')} className="text-xs p-2.5 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left"><div className="font-medium">Admin</div><div className="text-[#6B7B6B]">admin@vayeko.tg</div></button>
+            <div className="text-xs font-bold text-[#6B7B6B] mb-2">Comptes démo DEV uniquement (3) — client@vayeko.tg retiré :</div>
+            <div className="grid grid-cols-1 gap-2">
+              <button onClick={() => fillDemo('vendeur')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Vendeur — USER + SELLER</div><div className="text-[#6B7B6B]">vendeur@vayeko.tg • Boutique, produits, commandes</div></div><span className="text-[#0E9F6E]">→</span></button>
+              <button onClick={() => fillDemo('pro')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Professionnel — USER + PROFESSIONAL</div><div className="text-[#6B7B6B]">pro@vayeko.tg • Services, réservations</div></div><span className="text-[#0E9F6E]">→</span></button>
+              <button onClick={() => fillDemo('admin')} className="text-xs p-3 rounded-[12px] border border-[#E8E0D0] hover:border-[#0E9F6E] text-left flex justify-between items-center"><div><div className="font-bold">Admin — USER + ADMIN</div><div className="text-[#6B7B6B]">admin@vayeko.tg • Modération, audit</div></div><span className="text-[#0E9F6E]">→</span></button>
+            </div>
+            <div className="mt-3 text-[11px] text-[#6B7B6B] bg-[#FFFBEB] p-3 rounded-[12px] leading-relaxed">
+              <div className="font-bold text-[#1A2E1A]">Pourquoi pas de compte démo Client ?</div>
+              <div className="mt-1">Un USER peut acheter sans devenir SELLER/PRO. Ex: USER achète téléphone, reste USER. Plus tard il crée boutique → obtient SELLER, peut cumuler USER+SELLER+PROFESSIONAL. Comportement d'achat lié au compte, activité pro gérée séparément. Rôle ≠ Profession.</div>
             </div>
           </div>
 
           <div className="mt-6 text-center text-xs space-y-2">
             <div><Link href="/inscription" className="text-[#0E9F6E] font-medium hover:underline">Pas encore de compte ? S&apos;inscrire</Link></div>
             <div><Link href="/mot-de-passe-oublie" className="text-[#6B7B6B] hover:underline">Mot de passe oublié ?</Link></div>
-            <div className="pt-2 border-t border-[#F5F1E8]"><Link href="/auth/login" className="text-[#9CA99C] hover:underline text-[11px]">Ancienne page /auth/login (compatibilité)</Link></div>
           </div>
         </Card>
       </div>
