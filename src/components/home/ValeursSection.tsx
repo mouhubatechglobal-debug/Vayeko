@@ -1,37 +1,29 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { MapPin, ShieldCheck, Zap, Users } from "lucide-react"
 
 const valeurs = [
-  { id: 'local', title: 'Local', description: "Soutient l'économie locale", icon: MapPin, color: '#0E9F6E' },
-  { id: 'fiable', title: 'Fiable', description: 'Professionnels vérifiés', icon: ShieldCheck, color: '#FFB800' },
-  { id: 'rapide', title: 'Rapide', description: 'Accès facile et rapide', icon: Zap, color: '#06B6D4' },
-  { id: 'pour_tous', title: 'Pour tous', description: 'Particuliers et entreprises.', icon: Users, color: '#7C3AED' },
+  { icon: MapPin, title: 'Local', desc: 'Soutient l\'économie locale', color: '#FFB800' },
+  { icon: ShieldCheck, title: 'Fiable', desc: 'Professionnels vérifiés', color: '#FFB800' },
+  { icon: Zap, title: 'Rapide', desc: 'Accès facile et rapide', color: '#FFB800' },
+  { icon: Users, title: 'Pour tous', desc: 'Particuliers et entreprises.', color: '#FFB800' },
 ]
 
 export function ValeursSection() {
   return (
-    <section className="py-8 bg-white">
+    <section className="py-4 sm:py-6 bg-[#FFF8E6]">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {valeurs.map((valeur, index) => (
-            <motion.div
-              key={valeur.id}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="bg-[#FFFBEB] border border-[#E8E0D0]/50 rounded-[16px] p-4 flex gap-3 items-start hover:shadow-sm transition-shadow"
-            >
-              <div className="h-9 w-9 rounded-full bg-white border border-[#E8E0D0]/60 flex items-center justify-center shrink-0 shadow-sm">
-                <valeur.icon className="h-4 w-4" style={{ color: valeur.color }} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {valeurs.map((v) => (
+            <div key={v.title} className="bg-[#FFF5D6]/80 border border-[#E8DCC0]/50 rounded-[12px] p-3 sm:p-4 flex flex-col items-start gap-2">
+              <div className="h-6 w-6 rounded-full bg-[#FFB800]/20 flex items-center justify-center">
+                <v.icon className="h-3.5 w-3.5 text-[#B77900]" strokeWidth={2.5} />
               </div>
               <div>
-                <div className="font-bold text-[13px] text-[#1A2E1A] uppercase tracking-wide">{valeur.title}</div>
-                <div className="text-[11px] text-[#6B7B6B] mt-0.5 leading-tight">{valeur.description}</div>
+                <div className="font-extrabold text-[12px] text-[#0A2A12] tracking-wide">{v.title}</div>
+                <div className="text-[10px] leading-[1.3] text-[#6B7B6B] mt-0.5">{v.desc}</div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
