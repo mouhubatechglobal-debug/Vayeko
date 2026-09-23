@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   Vayeko — styles globaux (Tailwind gère l'essentiel du design system)
+   ------------------------------------------------------------------ */
+
+:root {
+  --vayeko-green: #0b3b2e;
+  --vayeko-green-dark: #072a21;
+  --vayeko-yellow: #ffc800;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply bg-vayeko-cream text-neutral-800 antialiased;
+  min-height: 100dvh;
+}
+
+/* Bande tissée inspirée du pagne togolais (footer / séparateurs) */
+.textile-strip {
+  background: repeating-linear-gradient(
+    90deg,
+    #ffc800 0 14px,
+    #0b3b2e 14px 20px,
+    #e13b3b 20px 34px,
+    #0b3b2e 34px 40px,
+    #ffffff 40px 46px,
+    #0b3b2e 46px 60px
+  );
+}
+
+/* Accessibilité : indicateur de focus cohérent sur l'ensemble du site */
+:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Améliore le rendu des petits écrans : pas de débordement horizontal */
+body,
+#__next {
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Respect strict du mode « réduire les animations » */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
