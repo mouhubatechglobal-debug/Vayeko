@@ -80,60 +80,7 @@ begin
 end;
 $$;
 
--- Rôle applicatif de l'utilisateur courant (profiles défini en migration 002)
-create or replace function public.current_app_role()
-returns text
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select role from public.profiles where id = auth.uid();
-$$;
 
--- L'utilisateur courant est-il admin ?
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'admin' and deleted_at is null
-  );
-$$;
 
--- L'utilisateur courant est-il membre d'une entreprise ?
-create or replace function public.is_business_member(p_business_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.business_members
-    where business_id = p_business_id and profile_id = auth.uid()
-  );
-$$;
 
--- L'utilisateur courant gère-t-il une boutique ? (via business_members)
-create or replace function public.is_shop_member(p_shop_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.shops s
-    join public.business_members bm on bm.business_id = s.business_id
-    where s.id = p_shop_id and bm.profile_id = auth.uid()
-  );
-$$;
 
-comment on function public.current_app_role() is 'Rôle applicatif de auth.uid() — utilisé par les politiques RLS.';
-comment on function public.is_admin() is 'true si auth.uid() est admin — utilisé par les politiques RLS.';

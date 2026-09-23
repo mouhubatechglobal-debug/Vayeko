@@ -1,8 +1,8 @@
 -- ============================================================================
--- VAYEKO V1 — INSTALLATION COMPLÈTE EN UNE SEULE PASTE (migrations 001 à 006)
--- v2 CORRIGÉE : bug de parenthèses réparé + relançable sans erreur (idempotent)
--- Instructions : tout copier → SQL Editor → New query → coller → Run
--- (Ne JAMAIS exécuter seed.sql en production.)
+-- VAYEKO V1 — INSTALLATION COMPLÈTE (v3) — migrations 001 à 006 corrigées
+-- Validée au parseur PostgreSQL + exécutée sur base de test avant envoi.
+-- Instructions : tout copier → SQL Editor → New query → coller → Run.
+-- Relançable sans erreur (idempotent). Ne JAMAIS exécuter seed.sql en prod.
 -- ============================================================================
 
 
@@ -92,6 +92,34 @@ begin
 end;
 $$;
 
+
+
+
+
+
+
+-- #############################################################################
+-- ==> EXÉCUTION DE migrations/002_users.sql
+-- #############################################################################
+
+-- =============================================================================
+-- Vayeko V1 — Migration 002 : profils utilisateurs
+-- =============================================================================
+
+create table if not exists public.profiles (
+  id          uuid primary key references auth.users(id) on delete cascade,
+  username    text unique,
+  full_name   text check (char_length(full_name) <= 80),
+  avatar_url  text check (avatar_url is null or char_length(avatar_url) <= 500),
+  phone       text check (phone is null or char_length(phone) <= 20),
+  whatsapp    text check (whatsapp is null or char_length(whatsapp) <= 20),
+  role        text not null default 'user' check (role in ('user', 'merchant', 'provider', 'admin')),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  -- Suppression douce : on conserve l'audit tout en masquant le profil
+  deleted_at  timestamptz
+);
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
 -- Rôle applicatif de l'utilisateur courant (profiles défini en migration 002)
 create or replace function public.current_app_role()
 returns text
@@ -117,61 +145,6 @@ as $$
   );
 $$;
 
--- L'utilisateur courant est-il membre d'une entreprise ?
-create or replace function public.is_business_member(p_business_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.business_members
-    where business_id = p_business_id and profile_id = auth.uid()
-  );
-$$;
-
--- L'utilisateur courant gère-t-il une boutique ? (via business_members)
-create or replace function public.is_shop_member(p_shop_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.shops s
-    join public.business_members bm on bm.business_id = s.business_id
-    where s.id = p_shop_id and bm.profile_id = auth.uid()
-  );
-$$;
-
-comment on function public.current_app_role() is 'Rôle applicatif de auth.uid() — utilisé par les politiques RLS.';
-comment on function public.is_admin() is 'true si auth.uid() est admin — utilisé par les politiques RLS.';
-
-
--- #############################################################################
--- ==> EXÉCUTION DE migrations/002_users.sql
--- #############################################################################
-
--- =============================================================================
--- Vayeko V1 — Migration 002 : profils utilisateurs
--- =============================================================================
-
-create table if not exists public.profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  username    text unique,
-  full_name   text check (char_length(full_name) <= 80),
-  avatar_url  text check (avatar_url is null or char_length(avatar_url) <= 500),
-  phone       text check (phone is null or char_length(phone) <= 20),
-  whatsapp    text check (whatsapp is null or char_length(whatsapp) <= 20),
-  role        text not null default 'user' check (role in ('user', 'merchant', 'provider', 'admin')),
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now(),
-  -- Suppression douce : on conserve l'audit tout en masquant le profil
-  deleted_at  timestamptz
-);
 
 create unique index if not exists profiles_username_lower_uidx
   on public.profiles (lower(username)) where username is not null;
@@ -363,6 +336,21 @@ create table if not exists public.business_members (
   created_at  timestamptz not null default now(),
   unique (business_id, profile_id)
 );
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
+-- L'utilisateur courant est-il membre d'une entreprise ?
+create or replace function public.is_business_member(p_business_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.business_members
+    where business_id = p_business_id and profile_id = auth.uid()
+  );
+$$;
+
 
 create index if not exists business_members_profile_idx on public.business_members (profile_id);
 
@@ -522,6 +510,23 @@ create table if not exists public.shops (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
+-- L'utilisateur courant gère-t-il une boutique ? (via business_members)
+create or replace function public.is_shop_member(p_shop_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.shops s
+    join public.business_members bm on bm.business_id = s.business_id
+    where s.id = p_shop_id and bm.profile_id = auth.uid()
+  );
+$$;
+
 
 create index if not exists shops_business_idx on public.shops (business_id);
 
@@ -1077,9 +1082,9 @@ create policy audit_logs_select_admin on public.audit_logs for select using (pub
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  ('avatars', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
-  ('business-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
-  ('product-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
+  ('avatars', 'avatars', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  ('business-assets', 'business-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  ('product-images', 'product-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,

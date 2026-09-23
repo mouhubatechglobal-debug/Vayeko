@@ -22,6 +22,23 @@ create table if not exists public.shops (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
+-- L'utilisateur courant gère-t-il une boutique ? (via business_members)
+create or replace function public.is_shop_member(p_shop_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.shops s
+    join public.business_members bm on bm.business_id = s.business_id
+    where s.id = p_shop_id and bm.profile_id = auth.uid()
+  );
+$$;
+
 
 create index if not exists shops_business_idx on public.shops (business_id);
 

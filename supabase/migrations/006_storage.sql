@@ -7,9 +7,9 @@
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  ('avatars', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
-  ('business-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
-  ('product-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
+  ('avatars', 'avatars', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  ('business-assets', 'business-assets', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  ('product-images', 'product-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,

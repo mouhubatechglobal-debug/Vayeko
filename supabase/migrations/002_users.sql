@@ -15,6 +15,32 @@ create table if not exists public.profiles (
   -- Suppression douce : on conserve l'audit tout en masquant le profil
   deleted_at  timestamptz
 );
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
+-- Rôle applicatif de l'utilisateur courant (profiles défini en migration 002)
+create or replace function public.current_app_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role from public.profiles where id = auth.uid();
+$$;
+
+-- L'utilisateur courant est-il admin ?
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin' and deleted_at is null
+  );
+$$;
+
 
 create unique index if not exists profiles_username_lower_uidx
   on public.profiles (lower(username)) where username is not null;

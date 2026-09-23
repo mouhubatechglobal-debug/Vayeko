@@ -102,6 +102,21 @@ create table if not exists public.business_members (
   created_at  timestamptz not null default now(),
   unique (business_id, profile_id)
 );
+-- Fonctions RLS utilitaires (déplacées ici car elles lisent cette table)
+-- L'utilisateur courant est-il membre d'une entreprise ?
+create or replace function public.is_business_member(p_business_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.business_members
+    where business_id = p_business_id and profile_id = auth.uid()
+  );
+$$;
+
 
 create index if not exists business_members_profile_idx on public.business_members (profile_id);
 
