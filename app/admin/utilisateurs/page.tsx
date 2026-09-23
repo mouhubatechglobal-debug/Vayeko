@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getServerSupabase } from '@/lib/database';
+import { getAdminSupabase } from '@/lib/database';
 import { formatDateFr } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { ROLE_LABELS } from '@/lib/permissions';
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Gestion des utilisateurs' };
 
 export default async function AdminUtilisateursPage() {
-  const supabase = await getServerSupabase();
+  const supabase = getAdminSupabase();
   const { data: profiles, error } = await supabase
     .from('profiles')
     .select('id, full_name, username, role, created_at, deleted_at')
