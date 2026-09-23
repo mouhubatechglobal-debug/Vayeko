@@ -62,8 +62,8 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="h-[12px] w-full overflow-hidden">
-        <img src="/images/african-pattern.jpg" alt="" className="w-full h-full object-cover" />
+      <div className="h-[0.3cm] w-full overflow-hidden">
+        <img src="/images/african-bandeau-03cm.png" alt="Motif africain bandeau 0,3cm" className="w-full h-full object-cover object-center" />
       </div>
     </footer>
   )

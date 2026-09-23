@@ -36,9 +36,9 @@ export function CategoriesBar() {
         </div>
       </div>
 
-      {/* Motif africain bas */}
-      <div className="h-[10px] mx-0 sm:mx-3 lg:mx-6 -mt-1 relative overflow-hidden rounded-b-[12px]">
-        <img src="/images/african-pattern.jpg" alt="" className="w-full h-full object-cover" />
+      {/* Motif africain bandeau 0,3cm */}
+      <div className="h-[0.3cm] mx-0 sm:mx-3 lg:mx-6 -mt-1 relative overflow-hidden">
+        <img src="/images/african-bandeau-03cm.png" alt="Motif africain 0,3cm" className="w-full h-full object-cover object-center" />
       </div>
     </section>
   )
