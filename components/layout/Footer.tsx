@@ -30,17 +30,26 @@ export function Footer() {
             <span className="text-2xl font-extrabold tracking-tight">{SITE_NAME}</span>
           </Link>
           <p className="mt-3 text-sm leading-relaxed text-white/70">{SITE_DESCRIPTION}</p>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-2.5">
             <a
               href="https://whatsapp.com/channel/0029VbE9enqKAwEcfRySrW0T"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow transition hover:brightness-105 active:scale-95"
+              className="flex items-center gap-2 rounded-xl bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow transition hover:brightness-105 active:scale-95"
             >
-              <Icon name="whatsapp" className="h-4 w-4" />
-              <span>Rejoindre notre Chaîne WhatsApp 📢</span>
+              <Icon name="whatsapp" className="h-4 w-4 shrink-0" />
+              <span>Chaîne WhatsApp officielle 📢</span>
             </a>
-            <div className="flex gap-2">
+            <a
+              href="https://chat.whatsapp.com/FlMkWCsyh8dECZT4gxmz4Y"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-xl bg-[#128C7E] px-3.5 py-2 text-xs font-bold text-white shadow transition hover:brightness-105 active:scale-95"
+            >
+              <Icon name="whatsapp" className="h-4 w-4 shrink-0" />
+              <span>Rejoindre la Communauté (Groupe) 💬</span>
+            </a>
+            <div className="flex gap-2 pt-1">
               {(
                 [
                   { name: 'facebook', label: 'Facebook' },
