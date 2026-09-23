@@ -10,23 +10,27 @@ import { CTACommunaute } from "@/components/home/CTACommunaute"
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFF8E6]">
-      {/* Hero avec photo femme togolaise exactement comme maquette */}
+      {/* NAVBAR - blanche compacte comme maquette */}
+      
+      {/* HERO - grande photo femme togolaise traditionnelle colorée headwrap téléphone sourit, Vayeko Le Togo à portée de main, badge 100% Togolais, barre recherche Lomé */}
       <Hero />
 
-      {/* Barre catégories verte foncée avec 6 icônes comme maquette */}
+      {/* BARRE CATÉGORIES VERTE - 6 catégories Services Boutiques Prix Immobilier Emploi Campus cercle blanc + accent jaune + nom blanc */}
       <CategoriesBar />
 
-      {/* Découvre nos catégories - 6 cartes colorées comme maquette */}
+      {/* DÉCOUVRE NOS CATÉGORIES - 6 grandes cartes photo couleur forte comme maquette */}
       <CategoriesGrid />
 
-      {/* Valeurs - Local Fiable Rapide Pour tous comme maquette */}
+      {/* BANDEAU VALEURS - 4 cartes Local Fiable Rapide Pour tous crème */}
       <ValeursSection />
 
-      {/* Produits populaires - Arachide Pagne wax Tomate Maïs comme maquette */}
+      {/* PRODUITS POPULAIRES - Arachide Pagne wax Tomate Maïs prix FCFA note étoile */}
       <ProduitsPopulairesSection />
 
-      {/* CTA Ensemble pour un Togo digital et plus fort ! comme maquette */}
+      {/* CTA COMMUNAUTAIRE - Ensemble pour un Togo digital et plus fort ! + carte Togo vert/jaune/rouge + côte Lomé */}
       <CTACommunaute />
+
+      {/* FOOTER + MOTIF FINAL - dans layout.tsx */}
     </div>
   )
 }

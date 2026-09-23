@@ -15,37 +15,29 @@ const categoriesBar = [
 export function CategoriesBar() {
   return (
     <section className="bg-[#FFF8E6] px-0">
-      {/* Conteneur vert foncé arrondi comme maquette */}
-      <div className="bg-[#0E3A23] mx-0 sm:mx-4 lg:mx-8 rounded-t-[24px] sm:rounded-t-[28px] relative overflow-hidden">
-        {/* Motif africain bordure haute - exactement comme maquette */}
-        <div className="h-[16px] w-full relative overflow-hidden">
-          <img src="/images/african-pattern.jpg" alt="" className="w-full h-full object-cover" />
-        </div>
-
-        <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-          {/* Grille 6 catégories comme maquette */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 sm:gap-2 lg:gap-4 max-w-[800px] mx-auto">
+      {/* Barre verte */}
+      <div className="bg-[#0E3A23] mx-0 sm:mx-3 lg:mx-6 rounded-[20px] sm:rounded-[24px] relative overflow-hidden border border-[#0E3A23] shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+        <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-6">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 sm:gap-3 max-w-[720px] mx-auto">
             {categoriesBar.map((cat) => (
               <Link key={cat.id} href={cat.href} className="group flex flex-col items-center gap-2 text-center">
                 <div className="relative">
-                  <div className="h-[52px] w-[52px] sm:h-[56px] sm:w-[56px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] group-hover:scale-105 transition-transform">
-                    <cat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#0A2A12]" strokeWidth={2} />
+                  <div className="h-[50px] w-[50px] sm:h-[54px] sm:w-[54px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] group-hover:scale-105 group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)] transition-all">
+                    <cat.icon className="h-5 w-5 text-[#0A2A12]" strokeWidth={2} />
                   </div>
-                  {/* Petit point jaune accent comme maquette */}
-                  <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#FFB800] border-[2px] border-[#0E3A23]" />
+                  <div className="absolute -top-0.5 -right-0.5 h-[14px] w-[14px] rounded-full bg-[#FFB800] border-2 border-[#0E3A23] flex items-center justify-center">
+                    <div className="h-1 w-1 rounded-full bg-[#0A2A12]" />
+                  </div>
                 </div>
-                <span className="font-bold text-[11px] sm:text-[12px] text-white tracking-wide">{cat.name}</span>
+                <span className="font-bold text-[11px] text-white tracking-wide">{cat.name}</span>
               </Link>
             ))}
           </div>
         </div>
-
-        {/* Bordure basse arrondie */}
-        <div className="h-3 bg-[#FFF8E6] rounded-t-[16px] sm:hidden" />
       </div>
 
-      {/* Motif africain bandeau bas comme maquette */}
-      <div className="h-[14px] mx-0 sm:mx-4 lg:mx-8 relative overflow-hidden -mt-1">
+      {/* Motif africain bas */}
+      <div className="h-[10px] mx-0 sm:mx-3 lg:mx-6 -mt-1 relative overflow-hidden rounded-b-[12px]">
         <img src="/images/african-pattern.jpg" alt="" className="w-full h-full object-cover" />
       </div>
     </section>
