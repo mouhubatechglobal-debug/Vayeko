@@ -47,7 +47,7 @@ export default async function AdminUtilisateursPage() {
               </div>
               <div className="flex items-center gap-3">
                 <UserRoleSelect profileId={p.id} current={p.role} />
-                <DeleteUserButton profileId={p.id} />
+                <DeleteUserButton profileId={p.id} isDeleted={!!p.deleted_at} />
               </div>
             </li>
           ))}

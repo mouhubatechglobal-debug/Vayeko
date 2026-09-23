@@ -129,6 +129,7 @@ export function SignUpForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [loading, setLoading] = useState(false);
@@ -235,16 +236,26 @@ export function SignUpForm() {
         onChange={(e) => setEmail(e.target.value)}
         error={errors.email}
       />
-      <Input
-        label="Mot de passe"
-        type="password"
-        autoComplete="new-password"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={errors.password}
-        hint="8 caractères minimum, avec une lettre et un chiffre."
-      />
+      <div className="relative">
+        <Input
+          label="Mot de passe"
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="new-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={errors.password}
+          hint="8 caractères minimum, avec une lettre et un chiffre."
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          className="absolute right-3 top-[37px] rounded px-2 py-1 text-xs font-semibold text-neutral-500 hover:text-vayeko-green"
+        >
+          {showPassword ? 'Masquer' : 'Afficher'}
+        </button>
+      </div>
 
       {feedback && (
         <p

@@ -226,3 +226,29 @@ export async function moderateReview(input: unknown): Promise<AdminActionResult>
   revalidatePath('/admin/moderation');
   return { ok: true };
 }
+
+/** Restaurer un utilisateur supprimé (Action Admin). */
+export async function restoreUser(profileId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('profiles')
+      .update({ deleted_at: null })
+      .eq('id', profileId);
+
+    if (error) {
+      console.error('[vayeko][restoreUser]', error);
+      return { ok: false, message: error.message || 'Impossible de réactiver cet utilisateur.' };
+    }
+    try {
+      await logAdminAction(adminId, 'user.restore', 'profile', profileId, {});
+    } catch {}
+    revalidatePath('/admin/utilisateurs');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la réactivation.' };
+  }
+}
