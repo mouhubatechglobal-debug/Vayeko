@@ -1,75 +1,62 @@
 "use client"
 
 import { Hero } from "@/components/home/Hero"
-import { Categories } from "@/components/home/Categories"
+import { CategoriesBar } from "@/components/home/CategoriesBar"
+import { CategoriesGrid } from "@/components/home/CategoriesGrid"
+import { ValeursSection } from "@/components/home/ValeursSection"
+import { ProduitsPopulairesSection } from "@/components/home/ProduitsPopulairesSection"
+import { CTACommunaute } from "@/components/home/CTACommunaute"
 import { ServicesSection } from "@/components/home/ServicesSection"
 import { BoutiquesSection } from "@/components/home/BoutiquesSection"
-import { ProduitsSection } from "@/components/home/ProduitsSection"
 import { PrixSection } from "@/components/home/PrixSection"
 import { ImmobilierSection } from "@/components/home/ImmobilierSection"
 import { EmploiSection } from "@/components/home/EmploiSection"
 import { CampusSection } from "@/components/home/CampusSection"
 import { AnnoncesSection } from "@/components/home/AnnoncesSection"
-import { CTASection } from "@/components/home/CTASection"
-import { motion } from "framer-motion"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* 2. HERO - Visuel fort Togo/local, personne avec téléphone, couleurs chaudes */}
+    <div className="min-h-screen bg-[#FFFBEB]">
+      {/* HERO PRINCIPAL - grande photo femme togolaise vêtement traditionnel coloré headwrap, regarde téléphone sourit, décor Togo */}
       <Hero />
 
-      {/* 3. RECHERCHE - Déjà intégrée dans Hero comme élément central Vayeko */}
+      {/* BARRE CATÉGORIES VERTE - 6 catégories Services/Boutiques/Prix/Immobilier/Emploi/Campus, cercle blanc + icône + accent jaune + nom blanc */}
+      <CategoriesBar />
 
-      {/* 4. CATÉGORIES - Cartes colorées arrondies, icône, titre, description, couleur propre */}
-      <Categories />
+      {/* SECTION CATÉGORIES - Découvre nos catégories + Voir tout, 6 grandes cartes photo couleur forte */}
+      <CategoriesGrid />
 
-      {/* 5. SERVICES - Titre "Services près de vous" */}
+      {/* BANDEAU VALEURS - Local, Fiable, Rapide, Pour tous, crème/jaune pâle */}
+      <ValeursSection />
+
+      {/* PRODUITS POPULAIRES - Arachide, Pagne Wax, Tomate, Maïs, prix FCFA jaune/or, note */}
+      <ProduitsPopulairesSection />
+
+      {/* SERVICES PRÈS DE VOUS - ServiceCard avec WhatsApp */}
       <ServicesSection />
 
-      {/* 6. BOUTIQUES / PRODUITS */}
+      {/* BOUTIQUES LOCALES */}
       <BoutiquesSection />
-      <ProduitsSection />
 
-      {/* 7. PRIX - Visuellement différente, produit + plusieurs vendeurs */}
+      {/* PRIX - Comparez les prix, visuellement différente */}
       <PrixSection />
 
-      {/* 8. IMMOBILIER - PropertyCard grande image dominante */}
+      {/* IMMOBILIER - PropertyCard grande image */}
       <ImmobilierSection />
 
-      {/* 9. EMPLOI - JobCard sobres */}
+      {/* EMPLOI - JobCard sobres */}
       <EmploiSection />
 
-      {/* 10. CAMPUS - Jeune et dynamique */}
+      {/* CAMPUS - jeune dynamique */}
       <CampusSection />
 
-      {/* 11. ANNONCES / COMMUNAUTÉ - Lecture rapide */}
+      {/* ANNONCES - lecture rapide */}
       <AnnoncesSection />
 
-      {/* 12. CTA - Communauté locale chaleureuse */}
-      <CTASection />
+      {/* CTA COMMUNAUTAIRE - Ensemble pour un Togo digital et plus fort ! */}
+      <CTACommunaute />
 
-      {/* 13. FOOTER - Dans layout, sombre vert foncé Vayeko */}
-      
-      {/* Indicateur fidélité maquette */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="py-6 text-center border-t border-[#F5F1E8] bg-[#FFFBEB]/30"
-      >
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-          <div className="text-[11px] text-[#9CA99C] font-medium">
-            Vayeko • Le Togo à portée de main • Fidèle à la maquette existante • 
-            <span className="text-[#0E9F6E]"> Blanc/Crème/Vert base</span> • 
-            <span className="text-[#FFB800]"> Jaune</span> • 
-            <span className="text-[#E11D48]"> Rouge</span> • 
-            <span className="text-[#06B6D4]"> Turquoise</span> • 
-            <span className="text-[#7C3AED]"> Violet</span> • 
-            Mobile-first 360→1440 • Framer Motion léger • Lucide only • WhatsApp identifiable
-          </div>
-        </div>
-      </motion.div>
+      {/* FOOTER + MOTIF FINAL - dans layout */}
     </div>
   )
 }
