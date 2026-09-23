@@ -100,20 +100,83 @@ export async function setUserRole(input: unknown): Promise<AdminActionResult> {
     return { ok: false, message: 'Vous ne pouvez pas modifier votre propre rôle.' };
   }
 
-  const admin = getAdminSupabase();
-  const { error } = await admin
-    .from('profiles')
-    .update({ role: parsed.data.role })
-    .eq('id', parsed.data.profile_id);
-  if (error) {
-    console.error('[vayeko][setUserRole]', error.code);
-    return { ok: false, message: 'Opération impossible pour le moment.' };
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('profiles')
+      .update({ role: parsed.data.role })
+      .eq('id', parsed.data.profile_id);
+    if (error) {
+      console.error('[vayeko][setUserRole]', error);
+      return { ok: false, message: error.message || 'Opération impossible.' };
+    }
+    try {
+      await logAdminAction(adminId, 'user.set_role', 'profile', parsed.data.profile_id, {
+        role: parsed.data.role,
+      });
+    } catch (logErr) {
+      console.warn('[vayeko][logAdminAction] ignored', logErr);
+    }
+    revalidatePath('/admin/utilisateurs');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors du changement de rôle.' };
   }
-  await logAdminAction(adminId, 'user.set_role', 'profile', parsed.data.profile_id, {
-    role: parsed.data.role,
-  });
-  revalidatePath('/admin/utilisateurs');
-  return { ok: true };
+}
+
+/** Supprimer ou désactiver un utilisateur (Action Admin). */
+export async function deleteUser(profileId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+  if (profileId === adminId) return { ok: false, message: 'Impossible de supprimer votre propre compte.' };
+
+  try {
+    const admin = getAdminSupabase();
+    // Marquer le compte comme supprimé (soft delete)
+    const { error } = await admin
+      .from('profiles')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', profileId);
+
+    if (error) {
+      console.error('[vayeko][deleteUser]', error);
+      return { ok: false, message: error.message || 'Impossible de supprimer cet utilisateur.' };
+    }
+    try {
+      await logAdminAction(adminId, 'user.delete', 'profile', profileId, {});
+    } catch {}
+    revalidatePath('/admin/utilisateurs');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la suppression.' };
+  }
+}
+
+/** Supprimer une boutique (Action Admin). */
+export async function deleteBusiness(businessId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('businesses')
+      .update({ deleted_at: new Date().toISOString(), status: 'suspended' })
+      .eq('id', businessId);
+
+    if (error) {
+      console.error('[vayeko][deleteBusiness]', error);
+      return { ok: false, message: error.message || 'Impossible de supprimer la boutique.' };
+    }
+    try {
+      await logAdminAction(adminId, 'business.delete', 'business', businessId, {});
+    } catch {}
+    revalidatePath('/admin/commerces');
+    revalidatePath('/boutiques');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la suppression.' };
+  }
 }
 
 /** Traiter un signalement (résolu / rejeté). */

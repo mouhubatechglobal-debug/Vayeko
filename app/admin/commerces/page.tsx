@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getServerSupabase } from '@/lib/database';
 import { formatDateFr } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
-import { BusinessStatusActions } from '@/components/admin/AdminActions';
+import { BusinessStatusActions, DeleteBusinessButton } from '@/components/admin/AdminActions';
 import { EmptyState } from '@/components/EmptyState';
 import type { BusinessStatus } from '@/types/database';
 
@@ -52,7 +52,10 @@ export default async function AdminCommercesPage() {
                     <span>Créé le {formatDateFr(b.created_at)}</span>
                   </p>
                 </div>
-                <BusinessStatusActions businessId={b.id} current={b.status} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <BusinessStatusActions businessId={b.id} current={b.status} />
+                  <DeleteBusinessButton businessId={b.id} />
+                </div>
               </div>
             </li>
           ))}

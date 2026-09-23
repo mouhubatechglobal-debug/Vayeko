@@ -3,7 +3,7 @@ import { getServerSupabase } from '@/lib/database';
 import { formatDateFr } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { ROLE_LABELS } from '@/lib/permissions';
-import { UserRoleSelect } from '@/components/admin/AdminActions';
+import { UserRoleSelect, DeleteUserButton } from '@/components/admin/AdminActions';
 import { EmptyState } from '@/components/EmptyState';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +45,10 @@ export default async function AdminUtilisateursPage() {
                   {ROLE_LABELS[p.role]}
                 </p>
               </div>
-              <UserRoleSelect profileId={p.id} current={p.role} />
+              <div className="flex items-center gap-3">
+                <UserRoleSelect profileId={p.id} current={p.role} />
+                <DeleteUserButton profileId={p.id} />
+              </div>
             </li>
           ))}
         </ul>

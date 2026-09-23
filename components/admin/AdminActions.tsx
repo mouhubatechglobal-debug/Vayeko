@@ -134,3 +134,69 @@ export function ModerateReviewActions({ reviewId }: { reviewId: string }) {
     </div>
   );
 }
+
+/** Bouton de suppression d'un utilisateur par l'admin. */
+export function DeleteUserButton({ profileId }: { profileId: string }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function onDelete() {
+    if (!confirm('Êtes-vous certain de vouloir désactiver / supprimer cet utilisateur ?')) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const { deleteUser } = await import('@/app/admin/actions');
+      const result = await deleteUser(profileId);
+      if (!result.ok) setError(result.message);
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        size="sm"
+        variant="danger"
+        loading={pending}
+        onClick={onDelete}
+        className="px-2 py-1 text-xs"
+      >
+        🗑️ Supprimer
+      </Button>
+      {error && <FeedbackTone message={error} />}
+    </div>
+  );
+}
+
+/** Bouton de suppression d'une boutique par l'admin. */
+export function DeleteBusinessButton({ businessId }: { businessId: string }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function onDelete() {
+    if (!confirm('Êtes-vous certain de vouloir supprimer cette boutique ?')) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const { deleteBusiness } = await import('@/app/admin/actions');
+      const result = await deleteBusiness(businessId);
+      if (!result.ok) setError(result.message);
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        size="sm"
+        variant="danger"
+        loading={pending}
+        onClick={onDelete}
+        className="px-2 py-1 text-xs"
+      >
+        🗑️ Supprimer boutique
+      </Button>
+      {error && <FeedbackTone message={error} />}
+    </div>
+  );
+}
