@@ -25,6 +25,7 @@ create table if not exists public.shops (
 
 create index if not exists shops_business_idx on public.shops (business_id);
 
+drop trigger if exists shops_set_updated_at on public.shops;
 create trigger shops_set_updated_at
   before update on public.shops
   for each row execute function public.set_updated_at();
@@ -52,6 +53,7 @@ create index if not exists products_status_idx on public.products (status) where
 create index if not exists products_price_idx on public.products (price_cfa) where status = 'active';
 create index if not exists products_name_trgm_idx on public.products using gin (name gin_trgm_ops);
 
+drop trigger if exists products_set_updated_at on public.products;
 create trigger products_set_updated_at
   before update on public.products
   for each row execute function public.set_updated_at();
@@ -82,6 +84,7 @@ begin
 end;
 $$;
 
+drop trigger if exists product_images_limit on public.product_images;
 create trigger product_images_limit
   before insert on public.product_images
   for each row execute function public.limit_product_images();
@@ -94,9 +97,11 @@ alter table public.shops enable row level security;
 alter table public.products enable row level security;
 alter table public.product_images enable row level security;
 
+drop policy if exists product_categories_select_all on public.product_categories;
 create policy product_categories_select_all on public.product_categories for select using (true);
 
 -- Boutiques visibles si l'entreprise parente est active
+drop policy if exists shops_select_public on public.shops;
 create policy shops_select_public on public.shops
   for select
   using (
@@ -107,8 +112,11 @@ create policy shops_select_public on public.shops
         and b.status = 'active'
         and b.deleted_at is null
     )
-  ) or public.is_shop_member(id) or public.is_admin();
+    or public.is_shop_member(id)
+    or public.is_admin()
+  );
 
+drop policy if exists shops_insert_member on public.shops;
 create policy shops_insert_member on public.shops
   for insert
   with check (
@@ -118,11 +126,13 @@ create policy shops_insert_member on public.shops
     )
   );
 
+drop policy if exists shops_update_member on public.shops;
 create policy shops_update_member on public.shops
   for update
   using (public.is_shop_member(id) or public.is_admin());
 
 -- Produits publics : actifs uniquement
+drop policy if exists products_select_public on public.products;
 create policy products_select_public on public.products
   for select
   using (
@@ -131,21 +141,26 @@ create policy products_select_public on public.products
     or public.is_admin()
   );
 
+drop policy if exists products_insert_member on public.products;
 create policy products_insert_member on public.products
   for insert
   with check (public.is_shop_member(shop_id));
 
+drop policy if exists products_update_member on public.products;
 create policy products_update_member on public.products
   for update
   using (public.is_shop_member(shop_id) or public.is_admin());
 
+drop policy if exists products_delete_member on public.products;
 create policy products_delete_member on public.products
   for delete
   using (public.is_shop_member(shop_id) or public.is_admin());
 
 -- Images : lecture publique, gestion par le membre de la boutique
+drop policy if exists product_images_select_all on public.product_images;
 create policy product_images_select_all on public.product_images for select using (true);
 
+drop policy if exists product_images_insert_member on public.product_images;
 create policy product_images_insert_member on public.product_images
   for insert
   with check (
@@ -155,6 +170,7 @@ create policy product_images_insert_member on public.product_images
     )
   );
 
+drop policy if exists product_images_delete_member on public.product_images;
 create policy product_images_delete_member on public.product_images
   for delete
   using (

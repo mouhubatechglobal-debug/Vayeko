@@ -19,6 +19,7 @@ create table if not exists public.profiles (
 create unique index if not exists profiles_username_lower_uidx
   on public.profiles (lower(username)) where username is not null;
 
+drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
@@ -62,6 +63,7 @@ begin
 end;
 $$;
 
+drop trigger if exists profiles_prevent_role_escalation on public.profiles;
 create trigger profiles_prevent_role_escalation
   before update of role on public.profiles
   for each row execute function public.prevent_role_escalation();
@@ -72,21 +74,25 @@ create trigger profiles_prevent_role_escalation
 alter table public.profiles enable row level security;
 
 -- Lecture publique limitée (fiches prestataires/vendeurs, auteurs d'avis)
+drop policy if exists profiles_select_public on public.profiles;
 create policy profiles_select_public on public.profiles
   for select
   using (deleted_at is null);
 
 -- Modification : uniquement son propre profil (role protégé par trigger)
+drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own on public.profiles
   for update
   using (auth.uid() = id);
 
 -- Insertion réservée au trigger (security definer) — aucune insertion API directe
+drop policy if exists profiles_insert_none on public.profiles;
 create policy profiles_insert_none on public.profiles
   for insert
   with check (false);
 
 -- Les suppressions sont gérées par un administrateur (suppression douce)
+drop policy if exists profiles_delete_admin on public.profiles;
 create policy profiles_delete_admin on public.profiles
   for delete
   using (public.is_admin());

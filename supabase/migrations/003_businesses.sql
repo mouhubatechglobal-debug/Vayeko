@@ -53,10 +53,12 @@ begin
 end;
 $$;
 
+drop trigger if exists locations_sync_geo on public.locations;
 create trigger locations_sync_geo
   before insert or update on public.locations
   for each row execute function public.sync_location_geo();
 
+drop trigger if exists locations_set_updated_at on public.locations;
 create trigger locations_set_updated_at
   before update on public.locations
   for each row execute function public.set_updated_at();
@@ -86,6 +88,7 @@ create index if not exists businesses_owner_idx on public.businesses (owner_id);
 create index if not exists businesses_status_idx on public.businesses (status) where deleted_at is null;
 create index if not exists businesses_name_trgm_idx on public.businesses using gin (name gin_trgm_ops);
 
+drop trigger if exists businesses_set_updated_at on public.businesses;
 create trigger businesses_set_updated_at
   before update on public.businesses
   for each row execute function public.set_updated_at();
@@ -116,6 +119,7 @@ begin
 end;
 $$;
 
+drop trigger if exists businesses_add_owner_member on public.businesses;
 create trigger businesses_add_owner_member
   after insert on public.businesses
   for each row execute function public.add_owner_as_member();
@@ -130,15 +134,21 @@ alter table public.businesses enable row level security;
 alter table public.business_members enable row level security;
 
 -- Référentiels géographiques : lecture publique
+drop policy if exists cities_select_all on public.cities;
 create policy cities_select_all on public.cities for select using (true);
+drop policy if exists neighborhoods_select_all on public.neighborhoods;
 create policy neighborhoods_select_all on public.neighborhoods for select using (true);
 
 -- Locations : lecture publique (adresses des fiches), écriture par utilisateur connecté
+drop policy if exists locations_select_all on public.locations;
 create policy locations_select_all on public.locations for select using (true);
+drop policy if exists locations_insert_auth on public.locations;
 create policy locations_insert_auth on public.locations for insert with check (auth.uid() is not null);
+drop policy if exists locations_update_auth on public.locations;
 create policy locations_update_auth on public.locations for update using (auth.uid() is not null);
 
 -- Commerces visibles : actifs pour tous, tout statut pour les membres/admins
+drop policy if exists businesses_select_public on public.businesses;
 create policy businesses_select_public on public.businesses
   for select
   using (
@@ -148,16 +158,19 @@ create policy businesses_select_public on public.businesses
   );
 
 -- Création : utilisateur connecté (owner = soi-même obligatoire)
+drop policy if exists businesses_insert_auth on public.businesses;
 create policy businesses_insert_auth on public.businesses
   for insert
   with check (auth.uid() is not null and owner_id = auth.uid());
 
 -- Modification : membres ou admin ; le statut reste réservé à l'admin
+drop policy if exists businesses_update_members on public.businesses;
 create policy businesses_update_members on public.businesses
   for update
   using (public.is_business_member(id) or public.is_admin());
 
 -- Seuls les admins suppriment (suppression douce via deleted_at)
+drop policy if exists businesses_delete_admin on public.businesses;
 create policy businesses_delete_admin on public.businesses
   for delete
   using (public.is_admin());
@@ -177,15 +190,18 @@ begin
 end;
 $$;
 
+drop trigger if exists businesses_guard_status on public.businesses;
 create trigger businesses_guard_status
   before update of status on public.businesses
   for each row execute function public.guard_business_status();
 
 -- Membres : visibles par membres/admin ; gestion par owner/admin
+drop policy if exists business_members_select on public.business_members;
 create policy business_members_select on public.business_members
   for select
   using (profile_id = auth.uid() or public.is_business_member(business_id) or public.is_admin());
 
+drop policy if exists business_members_insert_owner on public.business_members;
 create policy business_members_insert_owner on public.business_members
   for insert
   with check (
@@ -202,6 +218,7 @@ create policy business_members_insert_owner on public.business_members
     )
   );
 
+drop policy if exists business_members_delete_owner on public.business_members;
 create policy business_members_delete_owner on public.business_members
   for delete
   using (

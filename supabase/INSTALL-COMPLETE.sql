@@ -1,7 +1,7 @@
 -- ============================================================================
 -- VAYEKO V1 — INSTALLATION COMPLÈTE EN UNE SEULE PASTE (migrations 001 à 006)
+-- v2 CORRIGÉE : bug de parenthèses réparé + relançable sans erreur (idempotent)
 -- Instructions : tout copier → SQL Editor → New query → coller → Run
--- Sécurité : ce fichier crée la structure VIDE + les tables ; zéro fausse donnée.
 -- (Ne JAMAIS exécuter seed.sql en production.)
 -- ============================================================================
 
@@ -176,6 +176,7 @@ create table if not exists public.profiles (
 create unique index if not exists profiles_username_lower_uidx
   on public.profiles (lower(username)) where username is not null;
 
+drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
@@ -219,6 +220,7 @@ begin
 end;
 $$;
 
+drop trigger if exists profiles_prevent_role_escalation on public.profiles;
 create trigger profiles_prevent_role_escalation
   before update of role on public.profiles
   for each row execute function public.prevent_role_escalation();
@@ -229,21 +231,25 @@ create trigger profiles_prevent_role_escalation
 alter table public.profiles enable row level security;
 
 -- Lecture publique limitée (fiches prestataires/vendeurs, auteurs d'avis)
+drop policy if exists profiles_select_public on public.profiles;
 create policy profiles_select_public on public.profiles
   for select
   using (deleted_at is null);
 
 -- Modification : uniquement son propre profil (role protégé par trigger)
+drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own on public.profiles
   for update
   using (auth.uid() = id);
 
 -- Insertion réservée au trigger (security definer) — aucune insertion API directe
+drop policy if exists profiles_insert_none on public.profiles;
 create policy profiles_insert_none on public.profiles
   for insert
   with check (false);
 
 -- Les suppressions sont gérées par un administrateur (suppression douce)
+drop policy if exists profiles_delete_admin on public.profiles;
 create policy profiles_delete_admin on public.profiles
   for delete
   using (public.is_admin());
@@ -308,10 +314,12 @@ begin
 end;
 $$;
 
+drop trigger if exists locations_sync_geo on public.locations;
 create trigger locations_sync_geo
   before insert or update on public.locations
   for each row execute function public.sync_location_geo();
 
+drop trigger if exists locations_set_updated_at on public.locations;
 create trigger locations_set_updated_at
   before update on public.locations
   for each row execute function public.set_updated_at();
@@ -341,6 +349,7 @@ create index if not exists businesses_owner_idx on public.businesses (owner_id);
 create index if not exists businesses_status_idx on public.businesses (status) where deleted_at is null;
 create index if not exists businesses_name_trgm_idx on public.businesses using gin (name gin_trgm_ops);
 
+drop trigger if exists businesses_set_updated_at on public.businesses;
 create trigger businesses_set_updated_at
   before update on public.businesses
   for each row execute function public.set_updated_at();
@@ -371,6 +380,7 @@ begin
 end;
 $$;
 
+drop trigger if exists businesses_add_owner_member on public.businesses;
 create trigger businesses_add_owner_member
   after insert on public.businesses
   for each row execute function public.add_owner_as_member();
@@ -385,15 +395,21 @@ alter table public.businesses enable row level security;
 alter table public.business_members enable row level security;
 
 -- Référentiels géographiques : lecture publique
+drop policy if exists cities_select_all on public.cities;
 create policy cities_select_all on public.cities for select using (true);
+drop policy if exists neighborhoods_select_all on public.neighborhoods;
 create policy neighborhoods_select_all on public.neighborhoods for select using (true);
 
 -- Locations : lecture publique (adresses des fiches), écriture par utilisateur connecté
+drop policy if exists locations_select_all on public.locations;
 create policy locations_select_all on public.locations for select using (true);
+drop policy if exists locations_insert_auth on public.locations;
 create policy locations_insert_auth on public.locations for insert with check (auth.uid() is not null);
+drop policy if exists locations_update_auth on public.locations;
 create policy locations_update_auth on public.locations for update using (auth.uid() is not null);
 
 -- Commerces visibles : actifs pour tous, tout statut pour les membres/admins
+drop policy if exists businesses_select_public on public.businesses;
 create policy businesses_select_public on public.businesses
   for select
   using (
@@ -403,16 +419,19 @@ create policy businesses_select_public on public.businesses
   );
 
 -- Création : utilisateur connecté (owner = soi-même obligatoire)
+drop policy if exists businesses_insert_auth on public.businesses;
 create policy businesses_insert_auth on public.businesses
   for insert
   with check (auth.uid() is not null and owner_id = auth.uid());
 
 -- Modification : membres ou admin ; le statut reste réservé à l'admin
+drop policy if exists businesses_update_members on public.businesses;
 create policy businesses_update_members on public.businesses
   for update
   using (public.is_business_member(id) or public.is_admin());
 
 -- Seuls les admins suppriment (suppression douce via deleted_at)
+drop policy if exists businesses_delete_admin on public.businesses;
 create policy businesses_delete_admin on public.businesses
   for delete
   using (public.is_admin());
@@ -432,15 +451,18 @@ begin
 end;
 $$;
 
+drop trigger if exists businesses_guard_status on public.businesses;
 create trigger businesses_guard_status
   before update of status on public.businesses
   for each row execute function public.guard_business_status();
 
 -- Membres : visibles par membres/admin ; gestion par owner/admin
+drop policy if exists business_members_select on public.business_members;
 create policy business_members_select on public.business_members
   for select
   using (profile_id = auth.uid() or public.is_business_member(business_id) or public.is_admin());
 
+drop policy if exists business_members_insert_owner on public.business_members;
 create policy business_members_insert_owner on public.business_members
   for insert
   with check (
@@ -457,6 +479,7 @@ create policy business_members_insert_owner on public.business_members
     )
   );
 
+drop policy if exists business_members_delete_owner on public.business_members;
 create policy business_members_delete_owner on public.business_members
   for delete
   using (
@@ -502,6 +525,7 @@ create table if not exists public.shops (
 
 create index if not exists shops_business_idx on public.shops (business_id);
 
+drop trigger if exists shops_set_updated_at on public.shops;
 create trigger shops_set_updated_at
   before update on public.shops
   for each row execute function public.set_updated_at();
@@ -529,6 +553,7 @@ create index if not exists products_status_idx on public.products (status) where
 create index if not exists products_price_idx on public.products (price_cfa) where status = 'active';
 create index if not exists products_name_trgm_idx on public.products using gin (name gin_trgm_ops);
 
+drop trigger if exists products_set_updated_at on public.products;
 create trigger products_set_updated_at
   before update on public.products
   for each row execute function public.set_updated_at();
@@ -559,6 +584,7 @@ begin
 end;
 $$;
 
+drop trigger if exists product_images_limit on public.product_images;
 create trigger product_images_limit
   before insert on public.product_images
   for each row execute function public.limit_product_images();
@@ -571,9 +597,11 @@ alter table public.shops enable row level security;
 alter table public.products enable row level security;
 alter table public.product_images enable row level security;
 
+drop policy if exists product_categories_select_all on public.product_categories;
 create policy product_categories_select_all on public.product_categories for select using (true);
 
 -- Boutiques visibles si l'entreprise parente est active
+drop policy if exists shops_select_public on public.shops;
 create policy shops_select_public on public.shops
   for select
   using (
@@ -584,8 +612,11 @@ create policy shops_select_public on public.shops
         and b.status = 'active'
         and b.deleted_at is null
     )
-  ) or public.is_shop_member(id) or public.is_admin();
+    or public.is_shop_member(id)
+    or public.is_admin()
+  );
 
+drop policy if exists shops_insert_member on public.shops;
 create policy shops_insert_member on public.shops
   for insert
   with check (
@@ -595,11 +626,13 @@ create policy shops_insert_member on public.shops
     )
   );
 
+drop policy if exists shops_update_member on public.shops;
 create policy shops_update_member on public.shops
   for update
   using (public.is_shop_member(id) or public.is_admin());
 
 -- Produits publics : actifs uniquement
+drop policy if exists products_select_public on public.products;
 create policy products_select_public on public.products
   for select
   using (
@@ -608,21 +641,26 @@ create policy products_select_public on public.products
     or public.is_admin()
   );
 
+drop policy if exists products_insert_member on public.products;
 create policy products_insert_member on public.products
   for insert
   with check (public.is_shop_member(shop_id));
 
+drop policy if exists products_update_member on public.products;
 create policy products_update_member on public.products
   for update
   using (public.is_shop_member(shop_id) or public.is_admin());
 
+drop policy if exists products_delete_member on public.products;
 create policy products_delete_member on public.products
   for delete
   using (public.is_shop_member(shop_id) or public.is_admin());
 
 -- Images : lecture publique, gestion par le membre de la boutique
+drop policy if exists product_images_select_all on public.product_images;
 create policy product_images_select_all on public.product_images for select using (true);
 
+drop policy if exists product_images_insert_member on public.product_images;
 create policy product_images_insert_member on public.product_images
   for insert
   with check (
@@ -632,6 +670,7 @@ create policy product_images_insert_member on public.product_images
     )
   );
 
+drop policy if exists product_images_delete_member on public.product_images;
 create policy product_images_delete_member on public.product_images
   for delete
   using (
@@ -684,6 +723,7 @@ create index if not exists services_category_idx on public.services (category_id
 create index if not exists services_status_idx on public.services (status) where deleted_at is null;
 create index if not exists services_name_trgm_idx on public.services using gin (name gin_trgm_ops);
 
+drop trigger if exists services_set_updated_at on public.services;
 create trigger services_set_updated_at
   before update on public.services
   for each row execute function public.set_updated_at();
@@ -724,6 +764,7 @@ create index if not exists reviews_business_idx on public.reviews (business_id) 
 create index if not exists reviews_product_idx on public.reviews (product_id) where product_id is not null;
 create index if not exists reviews_service_idx on public.reviews (service_id) where service_id is not null;
 
+drop trigger if exists reviews_set_updated_at on public.reviews;
 create trigger reviews_set_updated_at
   before update on public.reviews
   for each row execute function public.set_updated_at();
@@ -775,6 +816,7 @@ create table if not exists public.reports (
 create index if not exists reports_status_idx on public.reports (status);
 create index if not exists reports_reporter_idx on public.reports (reporter_id);
 
+drop trigger if exists reports_set_updated_at on public.reports;
 create trigger reports_set_updated_at
   before update on public.reports
   for each row execute function public.set_updated_at();
@@ -811,6 +853,7 @@ create table if not exists public.order_items (
 
 create index if not exists order_items_order_idx on public.order_items (order_id);
 
+drop trigger if exists orders_set_updated_at on public.orders;
 create trigger orders_set_updated_at
   before update on public.orders
   for each row execute function public.set_updated_at();
@@ -865,10 +908,12 @@ begin
 end;
 $$;
 
+drop trigger if exists businesses_audit_status on public.businesses;
 create trigger businesses_audit_status
   after update of status on public.businesses
   for each row execute function public.audit_status_change();
 
+drop trigger if exists reports_audit_status on public.reports;
 create trigger reports_audit_status
   after update of status on public.reports
   for each row execute function public.audit_status_change();
@@ -887,9 +932,11 @@ alter table public.order_items enable row level security;
 alter table public.admin_actions enable row level security;
 alter table public.audit_logs enable row level security;
 
+drop policy if exists service_categories_select_all on public.service_categories;
 create policy service_categories_select_all on public.service_categories for select using (true);
 
 -- Services publics : actifs uniquement
+drop policy if exists services_select_public on public.services;
 create policy services_select_public on public.services
   for select
   using (
@@ -898,60 +945,74 @@ create policy services_select_public on public.services
     or public.is_admin()
   );
 
+drop policy if exists services_insert_member on public.services;
 create policy services_insert_member on public.services
   for insert
   with check (public.is_business_member(business_id));
 
+drop policy if exists services_update_member on public.services;
 create policy services_update_member on public.services
   for update
   using (public.is_business_member(business_id) or public.is_admin());
 
+drop policy if exists services_delete_member on public.services;
 create policy services_delete_member on public.services
   for delete
   using (public.is_business_member(business_id) or public.is_admin());
 
+drop policy if exists service_providers_select_all on public.service_providers;
 create policy service_providers_select_all on public.service_providers for select using (true);
+drop policy if exists service_providers_manage on public.service_providers;
 create policy service_providers_manage on public.service_providers
   for all
   using (public.is_business_member(business_id) or public.is_admin());
 
 -- Avis : lecture des avis publiés pour tous ; création par utilisateur connecté
+drop policy if exists reviews_select_public on public.reviews;
 create policy reviews_select_public on public.reviews
   for select
   using (status = 'published' or author_id = auth.uid() or public.is_admin());
 
+drop policy if exists reviews_insert_auth on public.reviews;
 create policy reviews_insert_auth on public.reviews
   for insert
   with check (auth.uid() is not null and author_id = auth.uid());
 
+drop policy if exists reviews_update_own on public.reviews;
 create policy reviews_update_own on public.reviews
   for update
   using (author_id = auth.uid() or public.is_admin());
 
+drop policy if exists reviews_delete_own_admin on public.reviews;
 create policy reviews_delete_own_admin on public.reviews
   for delete
   using (author_id = auth.uid() or public.is_admin());
 
 -- Favoris : privés à l'utilisateur
+drop policy if exists favorites_own on public.favorites;
 create policy favorites_own on public.favorites
   for all
   using (profile_id = auth.uid())
   with check (profile_id = auth.uid());
 
 -- Signalements : l'auteur voit les siens, l'admin tout, création par authentifié
+drop policy if exists reports_select_own_admin on public.reports;
 create policy reports_select_own_admin on public.reports
   for select
   using (reporter_id = auth.uid() or public.is_admin());
 
+drop policy if exists reports_insert_auth on public.reports;
 create policy reports_insert_auth on public.reports
   for insert
   with check (auth.uid() is not null and reporter_id = auth.uid());
 
+drop policy if exists reports_update_admin on public.reports;
 create policy reports_update_admin on public.reports
   for update
   using (public.is_admin());
 
 -- Commandes : le client voit les siennes, la boutique voit ses ventes
+drop policy if exists orders_select_own on public.orders;
 create policy orders_select_own on public.orders
   for select
   using (
@@ -960,6 +1021,7 @@ create policy orders_select_own on public.orders
     or public.is_admin()
   );
 
+drop policy if exists orders_insert_any on public.orders;
 create policy orders_insert_any on public.orders
   for insert
   with check (
@@ -967,10 +1029,12 @@ create policy orders_insert_any on public.orders
     and status = 'pending'
   );
 
+drop policy if exists orders_update_shop on public.orders;
 create policy orders_update_shop on public.orders
   for update
   using (public.is_shop_member(shop_id) or public.is_admin());
 
+drop policy if exists order_items_select on public.order_items;
 create policy order_items_select on public.order_items
   for select
   using (
@@ -981,6 +1045,7 @@ create policy order_items_select on public.order_items
     )
   );
 
+drop policy if exists order_items_insert on public.order_items;
 create policy order_items_insert on public.order_items
   for insert
   with check (
@@ -993,7 +1058,9 @@ create policy order_items_insert on public.order_items
   );
 
 -- Journaux : lecture réservée aux admins ; insertion via fonctions security definer
+drop policy if exists admin_actions_select_admin on public.admin_actions;
 create policy admin_actions_select_admin on public.admin_actions for select using (public.is_admin());
+drop policy if exists audit_logs_select_admin on public.audit_logs;
 create policy audit_logs_select_admin on public.audit_logs for select using (public.is_admin());
 
 
@@ -1054,5 +1121,4 @@ create policy vayeko_delete_own_folder on storage.objects
     and auth.uid() = owner
   );
 
--- ======================================================================
--- FIN — Toutes les tables Vayeko sont créées. 🎉
+-- FIN — Tables Vayeko créées. 🎉
