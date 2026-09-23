@@ -49,9 +49,11 @@ export function Footer() {
               <Icon name="whatsapp" className="h-4 w-4 shrink-0" />
               <span>Rejoindre la Communauté (Groupe) 💬</span>
             </a>
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               {(
                 [
+                  { name: 'tiktok', label: 'TikTok' },
+                  { name: 'telegram', label: 'Telegram' },
                   { name: 'facebook', label: 'Facebook' },
                   { name: 'instagram', label: 'Instagram' },
                   { name: 'x-social', label: 'X (Twitter)' },
@@ -62,7 +64,8 @@ export function Footer() {
                   key={s.name}
                   href="#"
                   aria-disabled="true"
-                  aria-label={`${SITE_NAME} sur ${s.label} (bientôt)`}
+                  title={`${s.label} — Lien bientôt disponible`}
+                  aria-label={`${SITE_NAME} sur ${s.label}`}
                   className="rounded-full bg-white/10 p-2 text-white/70 transition hover:bg-vayeko-yellow hover:text-vayeko-green-dark"
                 >
                   <Icon name={s.name} className="h-3.5 w-3.5" />

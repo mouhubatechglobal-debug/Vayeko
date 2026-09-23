@@ -72,21 +72,27 @@ export async function setBusinessStatus(input: unknown): Promise<AdminActionResu
   const parsed = adminBusinessStatusSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: 'Paramètres invalides.' };
 
-  const admin = getAdminSupabase();
-  const { error } = await admin
-    .from('businesses')
-    .update({ status: parsed.data.status })
-    .eq('id', parsed.data.business_id);
-  if (error) {
-    console.error('[vayeko][setBusinessStatus]', error.code);
-    return { ok: false, message: 'Opération impossible pour le moment.' };
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('businesses')
+      .update({ status: parsed.data.status })
+      .eq('id', parsed.data.business_id);
+    if (error) {
+      console.error('[vayeko][setBusinessStatus]', error);
+      return { ok: false, message: error.message || 'Opération impossible pour le moment.' };
+    }
+    try {
+      await logAdminAction(adminId, 'business.set_status', 'business', parsed.data.business_id, {
+        status: parsed.data.status,
+      });
+    } catch {}
+    revalidatePath('/admin/commerces');
+    revalidatePath('/boutiques');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la validation.' };
   }
-  await logAdminAction(adminId, 'business.set_status', 'business', parsed.data.business_id, {
-    status: parsed.data.status,
-  });
-  revalidatePath('/admin/commerces');
-  revalidatePath('/boutiques');
-  return { ok: true };
 }
 
 /** Modifier le rôle d'un utilisateur (uniquement par un admin). */
