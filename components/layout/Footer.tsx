@@ -30,25 +30,36 @@ export function Footer() {
             <span className="text-2xl font-extrabold tracking-tight">{SITE_NAME}</span>
           </Link>
           <p className="mt-3 text-sm leading-relaxed text-white/70">{SITE_DESCRIPTION}</p>
-          <div className="mt-4 flex gap-2">
-            {(
-              [
-                { name: 'facebook', label: 'Facebook' },
-                { name: 'instagram', label: 'Instagram' },
-                { name: 'x-social', label: 'X (Twitter)' },
-                { name: 'linkedin', label: 'LinkedIn' },
-              ] as const
-            ).map((s) => (
-              <a
-                key={s.name}
-                href="#"
-                aria-disabled="true"
-                aria-label={`${SITE_NAME} sur ${s.label} (bientôt)`}
-                className="rounded-full bg-white/10 p-2.5 text-white/80 transition hover:bg-vayeko-yellow hover:text-vayeko-green-dark"
-              >
-                <Icon name={s.name} className="h-4 w-4" />
-              </a>
-            ))}
+          <div className="mt-4 space-y-3">
+            <a
+              href="https://whatsapp.com/channel/0029VbE9enqKAwEcfRySrW0T"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow transition hover:brightness-105 active:scale-95"
+            >
+              <Icon name="whatsapp" className="h-4 w-4" />
+              <span>Rejoindre notre Chaîne WhatsApp 📢</span>
+            </a>
+            <div className="flex gap-2">
+              {(
+                [
+                  { name: 'facebook', label: 'Facebook' },
+                  { name: 'instagram', label: 'Instagram' },
+                  { name: 'x-social', label: 'X (Twitter)' },
+                  { name: 'linkedin', label: 'LinkedIn' },
+                ] as const
+              ).map((s) => (
+                <a
+                  key={s.name}
+                  href="#"
+                  aria-disabled="true"
+                  aria-label={`${SITE_NAME} sur ${s.label} (bientôt)`}
+                  className="rounded-full bg-white/10 p-2 text-white/70 transition hover:bg-vayeko-yellow hover:text-vayeko-green-dark"
+                >
+                  <Icon name={s.name} className="h-3.5 w-3.5" />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
