@@ -1,3 +1,4 @@
+import { ImageUploader } from '@/components/ui/ImageUploader';
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
@@ -40,6 +41,7 @@ export function ProductManager({ categories }: { categories: ProductCategory[] }
     category_id: '',
     stock: '',
     available: true,
+    imageUrl: '',
   });
 
   const refresh = useCallback(async () => {
@@ -64,7 +66,7 @@ export function ProductManager({ categories }: { categories: ProductCategory[] }
 
   function resetForm() {
     setEditingId(null);
-    setForm((f) => ({ ...f, name: '', description: '', price_cfa: '', category_id: '', stock: '', available: true }));
+    setForm((f) => ({ ...f, name: '', description: '', price_cfa: '', category_id: '', stock: '', available: true, imageUrl: '' }));
     setMessage(null);
   }
 

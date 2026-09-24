@@ -1,3 +1,4 @@
+import { ImageUploader } from '@/components/ui/ImageUploader';
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
@@ -42,6 +43,7 @@ export function BusinessForm({ cities }: { cities: City[] }) {
     whatsapp: '',
     type: 'shop' as 'shop' | 'service' | 'both',
     city_id: '',
+    logo_url: '',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -71,6 +73,7 @@ export function BusinessForm({ cities }: { cities: City[] }) {
       whatsapp: b.whatsapp ?? '',
       type: b.type,
       city_id: '',
+    logo_url: '',
     });
     setMessage(null);
   }
