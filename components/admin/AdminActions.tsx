@@ -485,3 +485,43 @@ export function DeleteBusinessButton({ businessId, isDeleted }: { businessId: st
     </div>
   );
 }
+/** Bouton pour certifier / vérifier une boutique (Action Admin). */
+export function ToggleVerifiedButton({ businessId, isVerified }: { businessId: string; isVerified?: boolean }) {
+  const [verified, setVerified] = useState(!!isVerified);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function onToggle() {
+    setError(null);
+    startTransition(async () => {
+      const { toggleBusinessVerified } = await import('@/app/admin/actions');
+      const next = !verified;
+      const result = await toggleBusinessVerified(businessId, next);
+      if (!result.ok) {
+        setError(result.message);
+      } else {
+        setVerified(next);
+      }
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Button
+        size="sm"
+        variant="ghost"
+        loading={pending}
+        onClick={onToggle}
+        className={`px-2.5 py-1 text-xs font-bold transition ${
+          verified
+            ? 'border-2 border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100'
+            : 'border border-neutral-300 text-neutral-600 hover:bg-neutral-100'
+        }`}
+        title="Donner ou retirer le badge Vérifié"
+      >
+        {verified ? '🛡️ Certifié Vérifié' : '⚪ Attribuer badge Vérifié'}
+      </Button>
+      {error && <FeedbackTone message={error} />}
+    </div>
+  );
+}

@@ -1,3 +1,4 @@
+let totalWhatsAppClicks = 0;
 import { getCurrentProfile } from '@/lib/auth';
 import { getServerSupabase } from '@/lib/database';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -30,6 +31,13 @@ export default async function DashboardPage() {
     const businessIds = (memberships ?? []).map((m) => m.business_id);
     businessCount = businessIds.length;
 
+    // Compter le total des clics WhatsApp
+    const { data: bData } = await supabase
+      .from('businesses')
+      .select('whatsapp_clicks')
+      .in('id', businessIds);
+    totalWhatsAppClicks = (bData ?? []).reduce((acc, curr: any) => acc + (curr.whatsapp_clicks || 0), 0);
+
     if (businessIds.length > 0) {
       const { data: shops } = await supabase
         .from('shops')
@@ -57,6 +65,7 @@ export default async function DashboardPage() {
     { label: 'Mes entreprises', value: businessCount, icon: 'shop', href: '/dashboard/boutique' },
     { label: 'Produits publiés', value: productCount, icon: 'tag', href: '/dashboard/produits' },
     { label: 'Services publiés', value: serviceCount, icon: 'wrench', href: '/dashboard/services' },
+    { label: 'Contacts WhatsApp reçus', value: totalWhatsAppClicks, icon: 'whatsapp', href: '/dashboard/boutique' },
   ];
 
   return (
@@ -69,7 +78,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Link
             key={s.label}

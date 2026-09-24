@@ -1,3 +1,4 @@
+import { WhatsAppShareButton } from '@/components/boutiques/WhatsAppShareButton';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -102,6 +103,9 @@ export default async function ProduitDetailPage({ params }: Props) {
               className="w-full"
               label="Commander via WhatsApp"
             />
+            <div className="pt-1">
+              <WhatsAppShareButton title={product.name} type="produit" />
+            </div>
             <p className="text-xs text-neutral-500">
               Vous discutez directement avec le vendeur : remise en main propre, prix et disponibilité.
             </p>

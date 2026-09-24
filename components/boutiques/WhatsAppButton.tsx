@@ -1,6 +1,9 @@
+'use client';
+
 import { buildWhatsAppLink } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/ui/Icon';
+import { createClient } from '@/lib/supabase';
 
 interface WhatsAppButtonProps {
   /** Numéro brut (nettoyé/validé en interne — jamais d'URL externe reçue). */
@@ -9,12 +12,11 @@ interface WhatsAppButtonProps {
   label?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  businessId?: string;
 }
 
 /**
- * Bouton de contact WhatsApp — le lien wa.me est toujours reconstruit
- * depuis le numéro validé. Si le numéro est invalide, le bouton est masqué
- * plutôt que d'afficher un lien cassé. Fonctionne mobile et desktop.
+ * Bouton de contact WhatsApp — avec incrémentation automatique du compteur de clics !
  */
 export function WhatsAppButton({
   phone,
@@ -22,6 +24,7 @@ export function WhatsAppButton({
   label = 'Contacter sur WhatsApp',
   size = 'md',
   className,
+  businessId,
 }: WhatsAppButtonProps) {
   const href = buildWhatsAppLink(phone, message);
   if (!href) return null;
@@ -32,11 +35,21 @@ export function WhatsAppButton({
     lg: 'px-6 py-3.5 text-base rounded-xl gap-2.5',
   }[size];
 
+  function handleClick() {
+    if (businessId) {
+      try {
+        const supabase = createClient();
+        (supabase as any).rpc('increment_whatsapp_clicks', { p_business_id: businessId }).then(() => {});
+      } catch {}
+    }
+  }
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={handleClick}
       className={cn(
         'inline-flex items-center justify-center bg-[#25D366] font-bold text-white shadow-md',
         'transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2',

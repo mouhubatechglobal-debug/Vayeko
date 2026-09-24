@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getAdminSupabase } from '@/lib/database';
 import { formatDateFr } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
-import { BusinessStatusActions, DeleteBusinessButton } from '@/components/admin/AdminActions';
+import { BusinessStatusActions, DeleteBusinessButton, ToggleVerifiedButton } from '@/components/admin/AdminActions';
 import { EmptyState } from '@/components/EmptyState';
 import type { BusinessStatus } from '@/types/database';
 
@@ -56,6 +56,7 @@ export default async function AdminCommercesPage() {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  <ToggleVerifiedButton businessId={b.id} isVerified={Boolean((b as any).is_verified)} />
                   <BusinessStatusActions businessId={b.id} current={b.status} />
                   <DeleteBusinessButton businessId={b.id} isDeleted={!!(b as any).deleted_at} />
                 </div>

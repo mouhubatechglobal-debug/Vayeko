@@ -377,3 +377,26 @@ export async function purgeUserPermanent(profileId: string): Promise<AdminAction
 }
 
 // Old purge user removed
+/** Attribuer ou retirer le badge Vérifié à une boutique (Action Admin). */
+export async function toggleBusinessVerified(businessId: string, verified: boolean): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('businesses')
+      .update({ is_verified: verified } as any)
+      .eq('id', businessId);
+
+    if (error) {
+      console.error('[vayeko][toggleBusinessVerified]', error);
+      return { ok: false, message: error.message || 'Impossible de modifier le badge vérifié.' };
+    }
+    revalidatePath('/admin/commerces');
+    revalidatePath('/boutiques');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la mise à jour.' };
+  }
+}

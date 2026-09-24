@@ -1,3 +1,5 @@
+import { WhatsAppShareButton } from '@/components/boutiques/WhatsAppShareButton';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -53,7 +55,7 @@ export default async function BoutiqueDetailPage({ params }: Props) {
         <div className="bg-gradient-to-r from-vayeko-green to-emerald-700 px-6 py-8 text-white">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold sm:text-3xl">{boutique.name}</h1>
+              <div className="flex flex-wrap items-center gap-2.5"><h1 className="text-2xl font-extrabold sm:text-3xl">{boutique.name}</h1>{(boutique as any).is_verified && <VerifiedBadge />}</div>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-white/85">
                 {boutique.city_name && (
                   <span className="inline-flex items-center gap-1">
@@ -69,7 +71,10 @@ export default async function BoutiqueDetailPage({ params }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
           <p className="max-w-xl text-sm text-neutral-600">{boutique.description}</p>
           <div className="flex items-center gap-2">
-            <WhatsAppButton phone={boutique.whatsapp} message={whatsappMessage} />
+            <div className="flex flex-col gap-2">
+              <WhatsAppButton phone={boutique.whatsapp} message={whatsappMessage} businessId={boutique.id} />
+              <WhatsAppShareButton title={boutique.name} type="boutique" />
+            </div>
             <ReportDialog target="business" businessId={boutique.id} />
           </div>
         </div>
