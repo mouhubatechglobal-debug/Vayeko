@@ -254,6 +254,15 @@ export function ProductManager({ categories }: { categories: ProductCategory[] }
             Disponible à la vente
           </label>
           <div className="sm:col-span-2">
+            <ImageUploader
+              bucket="product-images"
+              defaultUrl={form.imageUrl}
+              onUploaded={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
+              label="Photo réelle du produit"
+              hint="Prenez une photo nette de votre produit — JPG, PNG, max 5 Mo"
+            />
+          </div>
+          <div className="sm:col-span-2">
             <Textarea
               label="Description (facultatif)"
               maxLength={2000}

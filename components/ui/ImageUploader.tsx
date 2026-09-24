@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
-import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 
 interface ImageUploaderProps {

@@ -81,7 +81,7 @@ export function BusinessForm({ cities }: { cities: City[] }) {
 
   function resetForm() {
     setEditingId(null);
-    setForm({ name: '', description: '', phone: '', whatsapp: '', type: 'shop', city_id: '' });
+    setForm({ name: '', description: '', phone: '', whatsapp: '', type: 'shop', city_id: '', logo_url: '' });
     setMessage(null);
   }
 
@@ -232,6 +232,15 @@ export function BusinessForm({ cities }: { cities: City[] }) {
               </select>
             </div>
           )}
+          <div className="sm:col-span-2">
+            <ImageUploader
+              bucket="business-assets"
+              defaultUrl={form.logo_url}
+              onUploaded={(url) => setForm((f) => ({ ...f, logo_url: url }))}
+              label="Photo de la boutique, atelier ou logo"
+              hint="Prenez en photo votre enseigne ou atelier — JPG, PNG, max 5 Mo"
+            />
+          </div>
           <div className="sm:col-span-2">
             <Textarea
               label="Description"
