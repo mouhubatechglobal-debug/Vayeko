@@ -293,17 +293,19 @@ export async function purgeBusinessPermanent(businessId: string): Promise<AdminA
 
   try {
     const admin = getAdminSupabase();
-    const { error } = await admin
-      .from('businesses')
-      .delete()
-      .eq('id', businessId);
-
-    if (error) {
-      console.error('[vayeko][purgeBusinessPermanent]', error);
-      return { ok: false, message: error.message || 'Impossible de supprimer définitivement.' };
+    // Appel de la procédure stockée de purge cascade
+    const { error: rpcErr } = await (admin as any).rpc('purge_business_permanent', { p_business_id: businessId });
+    if (rpcErr) {
+      // Fallback manuel si la fonction RPC n'est pas encore créée
+      await admin.from('shops').delete().eq('business_id', businessId);
+      await admin.from('services').delete().eq('business_id', businessId);
+      await admin.from('business_members').delete().eq('business_id', businessId);
+      const { error } = await admin.from('businesses').delete().eq('id', businessId);
+      if (error) throw error;
     }
     revalidatePath('/admin/commerces');
     revalidatePath('/boutiques');
+    revalidatePath('/dashboard/boutique');
     return { ok: true };
   } catch (err: any) {
     return { ok: false, message: err?.message || 'Erreur lors de la suppression définitive.' };
