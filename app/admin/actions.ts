@@ -321,13 +321,21 @@ export async function purgeUserPermanent(profileId: string): Promise<AdminAction
   try {
     const admin = getAdminSupabase();
 
-    // 1. Supprimer ses avis
+    // 1. Supprimer les logs d'action admin où cet utilisateur était l'administrateur
+    await admin.from('admin_actions').delete().eq('admin_id', profileId);
+    await admin.from('audit_logs').delete().eq('profile_id', profileId);
+
+    // 2. Supprimer ses avis rédigés
     await admin.from('reviews').delete().eq('author_id', profileId);
 
-    // 2. Supprimer ses favoris
+    // 3. Supprimer ses favoris
     await admin.from('favorites').delete().eq('profile_id', profileId);
 
-    // 3. Supprimer ses boutiques et services
+    // 4. Supprimer ses signalements (créés ou résolus)
+    await admin.from('reports').delete().eq('reporter_id', profileId);
+    await admin.from('reports').update({ resolved_by: null }).eq('resolved_by', profileId);
+
+    // 5. Supprimer ses boutiques et services
     const { data: businesses } = await admin
       .from('businesses')
       .select('id')
@@ -339,18 +347,21 @@ export async function purgeUserPermanent(profileId: string): Promise<AdminAction
       }
     }
 
-    // 4. Supprimer de business_members
+    // 6. Supprimer des tables de membres
     await admin.from('business_members').delete().eq('profile_id', profileId);
 
-    // 5. Supprimer le profil
+    // 7. Supprimer le profil dans public.profiles
     const { error: profileErr } = await admin
       .from('profiles')
       .delete()
       .eq('id', profileId);
 
-    if (profileErr) throw profileErr;
+    if (profileErr) {
+      console.error('[vayeko][purgeUserPermanent] profile delete error', profileErr);
+      return { ok: false, message: profileErr.message || 'Impossible de purger le profil.' };
+    }
 
-    // 6. Supprimer le compte dans auth.users via l'API Admin Supabase
+    // 8. Supprimer le compte dans auth.users
     try {
       await admin.auth.admin.deleteUser(profileId);
     } catch (authErr) {
@@ -364,3 +375,5 @@ export async function purgeUserPermanent(profileId: string): Promise<AdminAction
     return { ok: false, message: err?.message || 'Erreur lors de la suppression définitive.' };
   }
 }
+
+// Old purge user removed
