@@ -311,3 +311,56 @@ export async function purgeBusinessPermanent(businessId: string): Promise<AdminA
     return { ok: false, message: err?.message || 'Erreur lors de la suppression définitive.' };
   }
 }
+
+/** Supprimer définitivement un utilisateur à vie (Purge totale Auth + Profil). */
+export async function purgeUserPermanent(profileId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+  if (profileId === adminId) return { ok: false, message: 'Impossible de supprimer votre propre compte.' };
+
+  try {
+    const admin = getAdminSupabase();
+
+    // 1. Supprimer ses avis
+    await admin.from('reviews').delete().eq('author_id', profileId);
+
+    // 2. Supprimer ses favoris
+    await admin.from('favorites').delete().eq('profile_id', profileId);
+
+    // 3. Supprimer ses boutiques et services
+    const { data: businesses } = await admin
+      .from('businesses')
+      .select('id')
+      .eq('owner_id', profileId);
+
+    if (businesses && businesses.length > 0) {
+      for (const b of businesses) {
+        await purgeBusinessPermanent(b.id);
+      }
+    }
+
+    // 4. Supprimer de business_members
+    await admin.from('business_members').delete().eq('profile_id', profileId);
+
+    // 5. Supprimer le profil
+    const { error: profileErr } = await admin
+      .from('profiles')
+      .delete()
+      .eq('id', profileId);
+
+    if (profileErr) throw profileErr;
+
+    // 6. Supprimer le compte dans auth.users via l'API Admin Supabase
+    try {
+      await admin.auth.admin.deleteUser(profileId);
+    } catch (authErr) {
+      console.warn('[vayeko][purgeUserPermanent] auth.admin.deleteUser', authErr);
+    }
+
+    revalidatePath('/admin/utilisateurs');
+    return { ok: true };
+  } catch (err: any) {
+    console.error('[vayeko][purgeUserPermanent]', err);
+    return { ok: false, message: err?.message || 'Erreur lors de la suppression définitive.' };
+  }
+}
