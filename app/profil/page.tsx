@@ -1,3 +1,4 @@
+import { EditProfileModal } from '@/components/profil/EditProfileModal';
 import { UpgradeToMerchantButton } from '@/components/profil/UpgradeToMerchantButton';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -8,7 +9,6 @@ import { formatDateFr } from '@/lib/utils';
 import { ROLE_LABELS } from '@/lib/permissions';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
-import { StarRating } from '@/components/ui/StarRating';
 import type { Favorite } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -111,11 +111,12 @@ export default async function ProfilPage() {
             <dd className="font-semibold text-neutral-900">{profile.whatsapp ?? '—'}</dd>
           </div>
         </dl>
-        <div className="mt-4 flex items-center gap-2 text-xs text-neutral-500">
-          <StarRating value={null} />
-          La modification du profil passe par l'API sécurisée (PATCH /api/utilisateurs) utilisée par
-          l'espace professionnel.
-        </div>
+        <EditProfileModal
+          initialFullName={profile.full_name}
+          initialPhone={profile.phone}
+          initialWhatsapp={profile.whatsapp}
+          initialUsername={profile.username}
+        />
       </section>
     </div>
   );
