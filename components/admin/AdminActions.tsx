@@ -246,13 +246,13 @@ export function DeleteUserButton({ profileId, isDeleted }: { profileId: string; 
 }
 
 /** Bouton de suppression d'une boutique par l'admin. */
-export function DeleteBusinessButton({ businessId }: { businessId: string }) {
+export function DeleteBusinessButton({ businessId, isDeleted }: { businessId: string; isDeleted?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [pending, startTransition] = useTransition();
 
-  function onConfirmDelete() {
+  function onConfirmDeactivate() {
     if (confirmText.trim().toUpperCase() !== 'SUPPRIMER') {
       setError('Veuillez taper le mot SUPPRIMER pour confirmer.');
       return;
@@ -269,6 +269,54 @@ export function DeleteBusinessButton({ businessId }: { businessId: string }) {
     });
   }
 
+  function onRestore() {
+    setError(null);
+    startTransition(async () => {
+      const { restoreBusiness } = await import('@/app/admin/actions');
+      const result = await restoreBusiness(businessId);
+      if (!result.ok) setError(result.message);
+    });
+  }
+
+  function onPurgePermanent() {
+    if (!confirm('ATTENTION : Voulez-vous supprimer cette boutique À VIE ? Cette action est irréversible.')) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const { purgeBusinessPermanent } = await import('@/app/admin/actions');
+      const result = await purgeBusinessPermanent(businessId);
+      if (!result.ok) setError(result.message);
+    });
+  }
+
+  if (isDeleted) {
+    return (
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Button
+          size="sm"
+          variant="secondary"
+          loading={pending}
+          onClick={onRestore}
+          className="bg-emerald-600 text-white hover:bg-emerald-700 px-2.5 py-1 text-xs font-bold"
+        >
+          ♻️ Réactiver boutique
+        </Button>
+        <Button
+          size="sm"
+          variant="danger"
+          loading={pending}
+          onClick={onPurgePermanent}
+          className="bg-red-800 text-white hover:bg-red-900 px-2 py-1 text-xs font-semibold"
+          title="Supprimer à vie de la base"
+        >
+          💥 Supprimer à vie
+        </Button>
+        {error && <FeedbackTone message={error} />}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-1">
       <Button
@@ -281,7 +329,7 @@ export function DeleteBusinessButton({ businessId }: { businessId: string }) {
         }}
         className="px-2.5 py-1 text-xs font-semibold shadow-sm"
       >
-        🗑️ Supprimer boutique
+        🗑️ Désactiver
       </Button>
 
       {showModal && (
@@ -289,11 +337,11 @@ export function DeleteBusinessButton({ businessId }: { businessId: string }) {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3 text-red-600">
               <span className="text-2xl">⚠️</span>
-              <h3 className="text-lg font-extrabold">Supprimer cette boutique</h3>
+              <h3 className="text-lg font-extrabold">Désactiver cette boutique</h3>
             </div>
             <p className="mt-2 text-sm text-neutral-600">
-              Cette boutique et ses produits ne seront plus visibles sur Vayeko.
-              Pour éviter toute erreur involontaire, tapez <strong>SUPPRIMER</strong> ci-dessous :
+              Cette boutique ne sera plus visible sur le site public. Vous pourrez la réactiver plus tard.
+              Pour confirmer, tapez <strong>SUPPRIMER</strong> ci-dessous :
             </p>
             <input
               type="text"
@@ -317,9 +365,9 @@ export function DeleteBusinessButton({ businessId }: { businessId: string }) {
                 variant="danger"
                 loading={pending}
                 disabled={confirmText.trim().toUpperCase() !== 'SUPPRIMER'}
-                onClick={onConfirmDelete}
+                onClick={onConfirmDeactivate}
               >
-                Confirmer la suppression
+                Confirmer la désactivation
               </Button>
             </div>
           </div>
@@ -328,3 +376,5 @@ export function DeleteBusinessButton({ businessId }: { businessId: string }) {
     </div>
   );
 }
+
+// Old delete business removed

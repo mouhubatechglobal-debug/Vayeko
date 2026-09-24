@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getServerSupabase } from '@/lib/database';
+import { getAdminSupabase } from '@/lib/database';
 import { formatDateFr } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { BusinessStatusActions, DeleteBusinessButton } from '@/components/admin/AdminActions';
@@ -18,11 +18,11 @@ const STATUS_LABELS: Record<BusinessStatus, { label: string; tone: 'yellow' | 'g
 };
 
 export default async function AdminCommercesPage() {
-  const supabase = await getServerSupabase();
+  const supabase = getAdminSupabase();
   const { data: businesses, error } = await supabase
     .from('businesses')
     .select('id, name, type, status, created_at, profiles:owner_id(full_name)')
-    .is('deleted_at', null)
+    
     .order('status')
     .order('created_at', { ascending: false })
     .limit(100)
@@ -44,7 +44,10 @@ export default async function AdminCommercesPage() {
             <li key={b.id} className="rounded-2xl bg-white px-4 py-3 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="font-bold text-vayeko-green">{b.name}</p>
+                  <p className="font-bold text-vayeko-green">
+                    {b.name}
+                    {(b as any).deleted_at && <Badge tone="red" className="ml-2">Désactivée / Supprimée</Badge>}
+                  </p>
                   <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
                     <Badge tone={STATUS_LABELS[b.status].tone}>{STATUS_LABELS[b.status].label}</Badge>
                     <span>Type : {b.type === 'shop' ? 'Commerce' : b.type === 'service' ? 'Prestataire' : 'Les deux'}</span>
@@ -54,7 +57,7 @@ export default async function AdminCommercesPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <BusinessStatusActions businessId={b.id} current={b.status} />
-                  <DeleteBusinessButton businessId={b.id} />
+                  <DeleteBusinessButton businessId={b.id} isDeleted={!!(b as any).deleted_at} />
                 </div>
               </div>
             </li>

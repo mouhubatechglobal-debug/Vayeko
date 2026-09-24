@@ -1,5 +1,6 @@
-import { ImageUploader } from '@/components/ui/ImageUploader';
 'use client';
+
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';

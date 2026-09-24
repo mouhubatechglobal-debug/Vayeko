@@ -258,3 +258,54 @@ export async function restoreUser(profileId: string): Promise<AdminActionResult>
     return { ok: false, message: err?.message || 'Erreur lors de la réactivation.' };
   }
 }
+
+/** Réactiver une boutique désactivée (Action Admin). */
+export async function restoreBusiness(businessId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('businesses')
+      .update({ deleted_at: null, status: 'active' })
+      .eq('id', businessId);
+
+    if (error) {
+      console.error('[vayeko][restoreBusiness]', error);
+      return { ok: false, message: error.message || 'Impossible de réactiver la boutique.' };
+    }
+    try {
+      await logAdminAction(adminId, 'business.restore', 'business', businessId, {});
+    } catch {}
+    revalidatePath('/admin/commerces');
+    revalidatePath('/boutiques');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la réactivation.' };
+  }
+}
+
+/** Supprimer définitivement une boutique à vie (Purge totale). */
+export async function purgeBusinessPermanent(businessId: string): Promise<AdminActionResult> {
+  const adminId = await getAdminId();
+  if (!adminId) return { ok: false, message: 'Accès refusé.' };
+
+  try {
+    const admin = getAdminSupabase();
+    const { error } = await admin
+      .from('businesses')
+      .delete()
+      .eq('id', businessId);
+
+    if (error) {
+      console.error('[vayeko][purgeBusinessPermanent]', error);
+      return { ok: false, message: error.message || 'Impossible de supprimer définitivement.' };
+    }
+    revalidatePath('/admin/commerces');
+    revalidatePath('/boutiques');
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'Erreur lors de la suppression définitive.' };
+  }
+}
