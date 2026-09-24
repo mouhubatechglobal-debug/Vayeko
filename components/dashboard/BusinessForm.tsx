@@ -1,5 +1,7 @@
 'use client';
 
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
+
 import { ImageUploader } from '@/components/ui/ImageUploader';
 
 import { useEffect, useState, type FormEvent } from 'react';
@@ -21,6 +23,7 @@ interface MyBusiness {
   phone: string | null;
   whatsapp: string | null;
   member_role: string;
+  is_verified?: boolean;
 }
 
 const STATUS_LABELS: Record<string, { label: string; tone: 'yellow' | 'green' | 'red' | 'neutral' }> = {
@@ -148,7 +151,10 @@ export function BusinessForm({ cities }: { cities: City[] }) {
             {businesses.map((b) => (
               <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-card">
                 <div>
-                  <p className="font-bold text-vayeko-green">{b.name}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-bold text-vayeko-green">{b.name}</p>
+                    {b.is_verified && <VerifiedBadge />}
+                  </div>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge tone={STATUS_LABELS[b.status]?.tone ?? 'neutral'}>
                       {STATUS_LABELS[b.status]?.label ?? b.status}

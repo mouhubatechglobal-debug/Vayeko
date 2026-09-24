@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       if (!user) return jsonError(401, 'Authentification requise.');
       const { data, error } = await supabase
         .from('business_members')
-        .select('member_role, businesses(id, name, slug, type, status, description, phone, whatsapp, created_at)')
+        .select('member_role, businesses(id, name, slug, type, status, description, phone, whatsapp, is_verified, created_at)')
         .eq('profile_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
